@@ -1128,14 +1128,23 @@ static GT_ATTRIBUTE_RAM_TEXT void _layer_top_destroy_handler_cb(struct _gt_timer
     if (gt_obj_is_type(layer_top, GT_TYPE_UNKNOWN)) {
         return;
     }
-    for (gt_size_t i = layer_top->cnt_child - 1; i >= 0; i--) {
-        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_STATUS_BAR)) {
+    /** Snapshot the count and bounds-check each iteration: _gt_obj_class_destroy()
+     *  fires CHANGE_DELETED synchronously, and a handler may destroy another
+     *  layer-top child, memmove-ing this array and shrinking cnt_child. Reading
+     *  child[i] with a stale i >= cnt_child would be an out-of-bounds access. */
+    gt_size_t cnt = layer_top->cnt_child;
+    for (gt_size_t i = cnt - 1; i >= 0; i--) {
+        if (i >= (gt_size_t)layer_top->cnt_child) {
+            continue;   /* element was removed during iteration */
+        }
+        gt_obj_st * child = layer_top->child[i];
+        if (gt_obj_is_type(child, GT_TYPE_STATUS_BAR)) {
             continue;
         }
-        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_DIALOG)) {
+        if (gt_obj_is_type(child, GT_TYPE_DIALOG)) {
             continue;
         }
-        _gt_obj_class_destroy(layer_top->child[i]);
+        _gt_obj_class_destroy(child);
     }
 }
 
@@ -1274,6 +1283,9 @@ _handle_duplicate_scr(
         ret->del_prev_scr = is_at_stack_bottom ? false : true;
         return;
     }
+    /** Pages with repeat IDs and ignore_repeat_screen_id=false are rebuilt on
+     * revisit so list-style content is refreshed instead of reusing stale
+     * widgets. force_create_reload covers explicit reloads of the current page. */
     if (param->force_create_reload
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
         || (false == param->ignore_repeat_screen_id)

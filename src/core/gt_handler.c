@@ -21,6 +21,7 @@
 #include "../others/gt_log.h"
 #include "../others/gt_gc.h"
 #include "gt_event.h"
+#include "gt_recycle.h"
 #include "../extra/gt_extra.h"
 #include "../core/gt_img_decoder.h"
 #include "../core/gt_theme.h"
@@ -38,6 +39,7 @@
 
 #if _GT_USE_TEST
 #include "../../test/gt_test_rand_widget.h"
+#include "../../test/gt_test_obj_recycle.h"
 #endif
 
 #if GT_CUSTOM_FONT_ENABLE
@@ -259,6 +261,14 @@ void gt_task_handler(void)
 #if _GT_TEST_RAND_WIDGET_EVENT
     _gt_test_rand_widget();
 #endif
+
+#if _GT_TEST_OBJ_DESTROY_STRESS
+    _gt_test_obj_destroy_stress();
+#endif
+
+    /** Safe point: frame boundary. Every timer/event for this frame has been
+     *  drained, so reclaim the blocks deferred by the two-phase destroy path. */
+    gt_recycle_flush();
 }
 
 void gt_task_set_paused(bool paused)

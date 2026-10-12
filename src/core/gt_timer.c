@@ -210,6 +210,14 @@ uint32_t _gt_timer_get_period(_gt_timer_st * timer)
 void _gt_timer_set_paused(_gt_timer_st * timer, bool state)
 {
     GT_CHECK_BACK(timer);
+    /** Idempotent: only act on an actual paused<->running transition.
+     *  A repeated resume (e.g. every gt_anim_start while the anim list is
+     *  already non-empty) must NOT rewind last_run, otherwise the period
+     *  check in _gt_timer_for_each_exec never reaches >= period and the
+     *  anim timer stops firing. */
+    if ((uint8_t)state == timer->paused) {
+        return;
+    }
     if (state) {
         /** remark current time more then last run time */
         timer->pause_time_diff = gt_tick_get() - timer->last_run;
@@ -217,7 +225,7 @@ void _gt_timer_set_paused(_gt_timer_st * timer, bool state)
             timer->pause_time_diff = 0;
         }
     } else {
-        /** reset last run timestamp to now */
+        /** reset last run timestamp to now (minus paused time) */
         timer->last_run = gt_tick_get() - timer->pause_time_diff;
         timer->pause_time_diff = 0;
     }

@@ -54,6 +54,25 @@ typedef enum {
     GT_DISABLED = 1,
 }gt_disabled_et;
 
+/**
+ * @brief Object lifecycle state (memory safety).
+ *        GT_OBJ_LIFE_ZOMBIE means the object has been unlinked from every
+ *        reference chain and is pending deferred reclamation. Every API that
+ *        validates via gt_obj_is_type() / gt_obj_class_get_type() then treats
+ *        the object as GT_TYPE_UNKNOWN, making re-entrant destroy/access a
+ *        no-op.
+ *        GT_OBJ_LIFE_DESTROYING is a transient gate set by _gt_obj_class_destroy()
+ *        before any CHANGE_* event is sent: it blocks re-entrant destroy while
+ *        still letting gt_obj_is_type() resolve the real type so the teardown
+ *        notifications (CHANGE_CHILD_DELETE/DELETED, CHANGE_DELETED) reach the
+ *        object's own handlers.
+ */
+typedef enum {
+    GT_OBJ_LIFE_ALIVE      = 0,   /**< normal, in use */
+    GT_OBJ_LIFE_ZOMBIE     = 1,   /**< unlinked, pending deferred reclamation */
+    GT_OBJ_LIFE_DESTROYING = 2,   /**< destroy in progress; type still resolvable so CHANGE_* events are deliverable */
+}gt_obj_life_state_et;
+
 typedef enum {
     GT_SCROLL_DISABLE            = 0,
     GT_SCROLL_HORIZONTAL         = 1,
@@ -113,6 +132,7 @@ typedef struct gt_obj_s {
     struct gt_obj_s ** child;
     struct gt_obj_s * parent;
     uint16_t cnt_child;
+    uint16_t cap_child;             /* allocated capacity of child[] (cnt_child <= cap_child); reserved on delete to avoid realloc moving the array */
     gt_id_t id;                     /* obj id, register by user, default: [-1] invalid id, normal begin from 0. */
 
     /** user's events */
@@ -147,6 +167,7 @@ typedef struct gt_obj_s {
     gt_point_st fixed_pos;          /* FLEX 前保存的相对坐标（相对于父容器） */
 #endif
 
+    uint32_t life_state    : 2;     /* object lifecycle @ref gt_obj_life_state_et (0:alive, 1:zombie, 2:destroying) */
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */
     uint32_t using_sta     : 1;     /* screen was using or not, not the widgets object. 1:using [Can not be free memory], 0:free */
@@ -346,13 +367,13 @@ void gt_obj_destroy(gt_obj_st * obj);
 /**
  * @brief [UNSAFE] Destroy the object immediately,
  *      Cannot be a running widget object.
- *      If the object is referenced by the in-flight event dispatch chain
- *      (target/origin or an ancestor of one), destruction is deferred to a
- *      timer to avoid use-after-free.
+ *      "Immediately" now means: synchronous unlink + ZOMBIE mark, with memory
+ *      reclamation deferred to the next safe point (end of frame / end of the
+ *      outermost event dispatch). A raw free is never issued while the
+ *      in-flight event dispatch chain may still reference the object.
  *
  * @param obj widgets object
- * @return gt_res_t GT_RES_OK: destroyed immediately (or obj is NULL);
- *                  GT_RES_DEFER: destruction deferred to a later tick
+ * @return gt_res_t GT_RES_OK: unlinked and pending reclamation (or obj is NULL)
  */
 gt_res_t gt_obj_destroy_immediately(gt_obj_st * obj);
 
