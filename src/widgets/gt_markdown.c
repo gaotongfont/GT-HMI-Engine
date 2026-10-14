@@ -470,6 +470,11 @@ _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
         GT_LOG_A("", "   height: %d", height);
 #endif
         gt_obj_set_h(ptr->act_p[ptr->act_idx], height);
+    } else if (MD_BLOCK_TABLE == type && gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TABLE)) {
+        /** 仅在 TABLE 块离开时（表头/单元格已全部加入）提前刷新，
+         *  使 DOC 离开布局前表格已具备真实高度；否则表格高度为 0，
+         *  后续段落会与表格重叠 */
+        gt_table_refresh(ptr->act_p[ptr->act_idx]);
     }
 
     if (MD_BLOCK_DOC == type) {

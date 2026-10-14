@@ -2562,8 +2562,14 @@ _disp_font:
         if (ret.size_show_limit.y > view->h) {
             ret.size_show_limit.y = view->h;
         }
-        if (dsc->reg.only_calc_display_info) { goto next_line_lb; }
-        if (dsc->opa < GT_OPA_MIN) { goto next_line_lb; }
+        if (dsc->reg.only_calc_display_info) {
+            area_font.x += ret_w;
+            goto next_line_lb;
+        }
+        if (dsc->opa < GT_OPA_MIN) {
+            area_font.x += ret_w;
+            goto next_line_lb;
+        }
 
         /** ------------- Display current line chars ------------- */
         while (idx_2 < idx_len) {

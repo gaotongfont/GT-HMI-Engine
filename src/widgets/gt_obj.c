@@ -403,6 +403,9 @@ gt_obj_st * gt_obj_find_by_id(gt_id_t widget_id)
     gt_disp_st * disp = gt_disp_get_default();
     gt_obj_st * target = NULL;
 
+    if (NULL == disp) {
+        return NULL;
+    }
     gt_size_t i = 0, cnt = disp->cnt_scr;
 
 #if GT_USE_LAYER_TOP
@@ -527,6 +530,10 @@ gt_res_t gt_obj_bring_to_front(gt_obj_st * obj)
     }
     gt_obj_st * parent = obj->parent;
     gt_res_t ret = GT_RES_FAIL;
+    if (NULL == parent) {
+        /** screen has no parent: bring-to-front is meaningless */
+        return GT_RES_INV;
+    }
     if (parent->cnt_child < 2) {
         return GT_RES_INV;
     }

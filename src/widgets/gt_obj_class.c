@@ -297,6 +297,10 @@ static GT_ATTRIBUTE_RAM_TEXT bool _create_new_screen_obj(gt_obj_st * obj) {
 /* global functions / API interface -------------------------------------*/
 struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s * parent)
 {
+    if (NULL == c) {
+        /** public API: a NULL class table would crash get_style_size() */
+        return NULL;
+    }
     uint32_t is = get_style_size(c);
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
@@ -381,6 +385,10 @@ bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
 
 struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
 {
+    if (NULL == obj) {
+        /** public API gt_obj_change_parent(NULL, to): obj->parent would crash */
+        return NULL;
+    }
     gt_obj_st * parent = obj->parent;
     bool is_success = false;
     if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
