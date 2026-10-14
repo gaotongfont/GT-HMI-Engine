@@ -151,44 +151,25 @@ _release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st co
             }
         }
         if (false == is_alive) {
-            if (NULL == pop_scr) {
-                /** NULL slot (defensive): _gt_scr_stack_remove_pop_scr(NULL) is
-                 *  a no-op, so inline-remove the slot; otherwise the loop would
-                 *  re-target the same slot forever. Normal record()/remove()
-                 *  never leave NULL slots. */
-                gt_memmove(&scr_info->pop_remark.pop_scr_list[i],
-                           &scr_info->pop_remark.pop_scr_list[i + 1],
-                           sizeof(gt_obj_st *) * (scr_info->pop_remark.cnt - i - 1));
-                --scr_info->pop_remark.cnt;
-                i = scr_info->pop_remark.cnt - 1;
-                continue;
-            }
             if (pop_scr == active_scr) {
                 --i;
                 continue;
             }
             /**
-             * Stale-entry guard: a screen no longer ALIVE (ZOMBIE / DESTROYING,
-             * e.g. already destroyed by another path such as the switch anim
-             * ready callback) may still sit in pop_remark if its destroy did not
-             * run through the screen branch. gt_obj_destroy_immediately() would
-             * no-op on it and leave the entry behind, so drop it explicitly to
-             * keep the loop convergent. Checking life_state covers both ZOMBIE
-             * and DESTROYING; it also subsumes the classes == NULL case, because
-             * classes is only cleared (in _gt_obj_class_destroy_property) after
-             * life_state has already left ALIVE.
-             */
-            if (GT_OBJ_LIFE_ALIVE != pop_scr->life_state) {
-                _gt_scr_stack_remove_pop_scr(pop_scr);
-                i = scr_info->pop_remark.cnt - 1;
-                continue;
-            }
-            /**
              * gt_obj_destroy_immediately -> _gt_obj_class_destroy ->
              * _gt_scr_stack_remove_pop_scr: removes this entry and decrements cnt.
+             * Do NOT touch pop_scr_list or cnt here to avoid double-removal.
              * Re-read cnt after destroy since it may have changed.
+             *
+             * If destruction is deferred (object is in the event dispatch chain),
+             * the entry is NOT removed yet; its destroy timer finishes the job
+             * later. Move to the previous entry to avoid re-processing the same
+             * entry and spinning forever.
              */
-            gt_obj_destroy_immediately(pop_scr);
+            if (GT_RES_DEFER == gt_obj_destroy_immediately(pop_scr)) {
+                --i;
+                continue;
+            }
             i = scr_info->pop_remark.cnt - 1;
             continue;
         }

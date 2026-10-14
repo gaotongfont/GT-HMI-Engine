@@ -30,64 +30,6 @@ extern "C" {
     #define GT_MEM_USE_MUTEX                        0
 #endif
 
-#ifndef GT_MEM_USE_CANARY
-    /**
-     * @brief Enable a backend-agnostic safe-heap guard. Every allocation gets a
-     *      magic header so double-free / use-after-free / buffer overflow can be
-     *      detected deterministically at free time.
-     *      It wraps the malloc/free hooks, therefore it works over BOTH the TLSF
-     *      pool (GT_MEM_CUSTOM=1) and external allocators (GT_MEM_CUSTOM=0).
-     *      0: disabled (zero overhead, zero pointer offset)
-     *      1: enabled (adds a small header per allocation)
-     *      [default: 0]
-     */
-    #define GT_MEM_USE_CANARY                       0
-#endif
-
-#ifndef GT_MEM_QUARANTINE_MAX
-    /**
-     * @brief [GT_MEM_USE_CANARY only] Number of freed blocks parked in the
-     *      quarantine ring before the oldest one is returned to the allocator.
-     *      Delaying the actual free keeps the address valid (but poisoned) so
-     *      a use-after-free / double-free right after a flush is caught by the
-     *      canary check instead of silently landing on a reused block.
-     *      It bounds the detector's extra peak memory to this many blocks.
-     *      Ignored (zero cost) when GT_MEM_USE_CANARY is 0.
-     *      [default: 32]
-     */
-    #define GT_MEM_QUARANTINE_MAX                    32
-#endif
-
-#ifndef GT_MEM_CANARY_POISON_MAX
-    /**
-     * @brief [GT_MEM_USE_CANARY only] Cap on how many payload bytes are
-     *      poisoned at free time. Large blocks (image buffers, font tables)
-     *      would otherwise cost an O(size) memset per free; poisoning the first
-     *      N bytes is enough to expose the overwhelming majority of
-     *      use-after-free reads, which hit the leading object-header fields.
-     *      Keeps free O(1) regardless of block size.
-     *      Ignored (zero cost) when GT_MEM_USE_CANARY is 0.
-     *      [default: 64]
-     */
-    #define GT_MEM_CANARY_POISON_MAX                 64
-#endif
-
-#ifndef GT_MEM_CANARY_QUARANTINE_MUTEX
-    /**
-     * @brief [GT_MEM_USE_CANARY only] Protect the quarantine ring against
-     *      concurrent push (gt_mem_reclaim) from multiple threads. Reuses the
-     *      same mutex registered via gt_mem_register_mutex(), so it only takes
-     *      effect together with GT_MEM_USE_MUTEX = 1; when GT_MEM_USE_MUTEX is
-     *      0 it silently degrades to an unlocked ring (single-threaded build).
-     *      The lock never spans the underlying free hooks: the oldest block is
-     *      released outside the critical section, so it can not nest with the
-     *      allocator mutex and deadlock.
-     *      Ignored (zero cost) when GT_MEM_USE_CANARY is 0.
-     *      [default: 0]
-     */
-    #define GT_MEM_CANARY_QUARANTINE_MUTEX           0
-#endif
-
 #ifndef GT_USE_MEM_ILLEGAL_POINTER_HANDLE
     /**
      * @brief Register illegal memory pointer handle callback
@@ -310,23 +252,6 @@ void gt_mem_check_used(void);
  * @param mem_info Get the memory pool information
  */
 void gt_mem_heap_get_space(gt_mem_info_st * mem_info);
-
-/**
- * @brief Mark a block as deferred (quarantined) so its memory stays valid until
- *      gt_mem_reclaim() releases it. A gt_mem_free() on a deferred block is
- *      treated as a double-free. No-op when GT_MEM_USE_CANARY is 0.
- *
- * @param ptr payload pointer previously returned by gt_mem_malloc/realloc/calloc
- */
-void gt_mem_defer(void * ptr);
-
-/**
- * @brief Release a block previously marked deferred by gt_mem_defer().
- *      Equivalent to gt_mem_free() when GT_MEM_USE_CANARY is 0.
- *
- * @param ptr payload pointer previously passed to gt_mem_defer()
- */
-void gt_mem_reclaim(void * ptr);
 
 #ifndef gt_mem_malloc
     #define gt_mem_malloc(size)         _mem_malloc(size, _GT_LOG_PRINT_FILE, __func__, __LINE__)

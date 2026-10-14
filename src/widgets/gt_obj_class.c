@@ -12,7 +12,6 @@
 #include "./gt_obj.h"
 #include "../core/gt_obj_pos.h"
 #include "../core/gt_mem.h"
-#include "../core/gt_recycle.h"
 #include "../core/gt_style.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_indev.h"
@@ -82,27 +81,13 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st 
         gt_memmove(&disp->screens[idx], &disp->screens[idx + 1], (disp->cnt_scr - idx) * sizeof(gt_obj_st * ));
     }
     disp->screens[disp->cnt_scr] = NULL;
-    /** No realloc on delete: keep the reserved capacity so a concurrent screen
-     *  scan never observes a moved array. Free + reset cap only when empty. */
     if (0 == disp->cnt_scr) {
         gt_mem_free(disp->screens);
         disp->screens = NULL;
-        disp->cap_scr = 0;
+    } else {
+        gt_obj_st ** tmp = (gt_obj_st ** )gt_mem_realloc(disp->screens, disp->cnt_scr * sizeof(gt_obj_st * ));
+        if (tmp) { disp->screens = tmp; }
     }
-#if GT_OBJ_CHILD_ARRAY_SHRINK
-    else if (disp->cap_scr >= 8 && disp->cnt_scr <= disp->cap_scr / 4) {
-        /** High-watermark shrink: release the reserved headroom when few screens
-         *  remain. realloc moves the array base, but this runs in the destroy
-         *  path where the two-phase iterators already snapshot the count, so no
-         *  in-flight scan observes the moved base. */
-        uint16_t new_cap = disp->cap_scr / 2;
-        gt_obj_st ** tmp = (gt_obj_st **)gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * new_cap);
-        if (NULL != tmp) {
-            disp->screens = tmp;
-            disp->cap_scr = new_cap;
-        }
-    }
-#endif
 
     /** The screen is being freed. Drop the switch-animation reference so an
      *  in-flight anim ready callback (or a pending load) never reads a dangling
@@ -148,25 +133,13 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_from_parent(gt_ob
         gt_memmove(&parent->child[idx], &parent->child[idx + 1], (parent->cnt_child - idx) * sizeof(gt_obj_st * ));
     }
     parent->child[parent->cnt_child] = NULL;
-    /** No realloc on delete: keep the reserved capacity so a concurrent scan of
-     *  parent->child[] never observes a moved array. The slot is freed and the
-     *  capacity reset only when the container becomes empty. */
     if (0 == parent->cnt_child) {
         gt_mem_free(parent->child);
         parent->child = NULL;
-        parent->cap_child = 0;
+    } else {
+        gt_obj_st ** tmp = (gt_obj_st ** )gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
+        if (tmp) { parent->child = tmp; }
     }
-#if GT_OBJ_CHILD_ARRAY_SHRINK
-    else if (parent->cap_child >= 8 && parent->cnt_child <= parent->cap_child / 4) {
-        /** High-watermark shrink (see _gt_obj_class_destroy_screen). */
-        uint16_t new_cap = parent->cap_child / 2;
-        gt_obj_st ** tmp = (gt_obj_st **)gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * new_cap);
-        if (NULL != tmp) {
-            parent->child = tmp;
-            parent->cap_child = new_cap;
-        }
-    }
-#endif
     return ret_p;
 }
 
@@ -202,56 +175,88 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_class_destroy_property(gt_obj_st * sel
     }
 }
 
-/**
- * @brief Detach and destroy every child of @p self (recursively, two-phase).
- *        The child array itself is deferred for reclamation. @p self is NOT
- *        destroyed by this helper.
- *
- * @param self container whose children are released
- */
-static GT_ATTRIBUTE_RAM_TEXT void _destroy_children_array(gt_obj_st * self) {
-    gt_obj_st ** child_arr = self->child;
-    gt_size_t cnt = self->cnt_child;
-    self->child = NULL;
-    self->cnt_child = 0;
-    self->cap_child = 0;
-    if (NULL == child_arr) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
+    if (gt_obj_is_type(self, GT_TYPE_UNKNOWN)) {
         return;
     }
+    _gt_obj_class_destroy_property(self);
+    gt_mem_free(self);
+    self = NULL;
+}
 
-    /** release child object from bottom to top */
-    for (gt_size_t i = cnt; i > 0; i--) {
-        gt_obj_st * child = child_arr[i - 1];
-        if (NULL == child) {
-            continue;
+/**
+ * @brief Destroy the object and its child objects
+ *
+ * @param self The Current object
+ * @param is_root true: root object, false: child object
+ * @return true The deepest child object is released, return recursively
+ * @return false Go to the next level of child object
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool _destroy_and_free_children(struct gt_obj_s * self, bool is_root) {
+    gt_size_t i = 0;
+
+    if (NULL == self->child || 0 == self->cnt_child) {
+        self->cnt_child = 0;
+        if (false == is_root) {
+            /**
+             * @brief free obj memory, root need to release disp memory,
+             *       child only need to release obj memory in here
+             */
+            _gt_obj_class_destroy_self(self);
         }
-        /** Two-phase destroy: unlink + ZOMBIE + deferred reclamation. The parent
-         *  child array is already detached above, so _gt_obj_class_destroy_from_parent()
-         *  no-ops inside _gt_obj_class_destroy(). */
-        _gt_obj_class_destroy(child);
+        return true;
+    }
+    if (gt_obj_is_type(self, GT_TYPE_UNKNOWN)) {
+        return false;
+    }
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETE, NULL);
+
+    // release child object from bottom to top
+    for (i = self->cnt_child - 1; i >= 0; i--) {
+        gt_obj_st * child = self->child[i];
+        if (_gt_obj_in_event_dispatch(child)) {
+            child->using_sta = false;
+            child->parent = NULL;
+            gt_obj_destroy(child);
+            self->child[i] = NULL;
+        } else if (_destroy_and_free_children(child, false)) {
+            self->child[i] = NULL;  /** can not repeat free memory here */
+        }
     }
 
-    gt_recycle_defer(child_arr);
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
+
+    // release child array memory
+    if (NULL != self->child) {
+        gt_mem_free(self->child);
+        self->child = NULL;
+    }
+    self->cnt_child = 0;
+    if (!is_root) {
+        _gt_obj_class_destroy_self(self);
+        self = NULL;
+    }
+    return false;
 }
 
 static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
-    if (parent->cnt_child >= parent->cap_child) {
-        /** Grow capacity (4 -> 8 -> 16 ...). Realloc happens only here, on
-         *  growth, and parent->child is updated atomically right after, so a
-         *  concurrent iteration of parent->child[] never observes a moved
-         *  array. The delete path (see _gt_obj_class_destroy_from_parent)
-         *  never reallocs, so shrinking can not invalidate an in-flight scan. */
-        uint16_t new_cap = parent->cap_child ? parent->cap_child * 2 : 4;
-        gt_obj_st ** tmp = parent->child
-            ? (gt_obj_st **)gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * new_cap)
-            : (gt_obj_st **)gt_mem_malloc(sizeof(gt_obj_st *) * new_cap);
+    if (parent->child == NULL) {
+        parent->cnt_child = 0;
+        gt_obj_st ** child = gt_mem_malloc(sizeof(gt_obj_st *));
+        if (!child) {
+            return false;
+        }
+        child[0] = obj;
+        parent->child = child;
+        parent->cnt_child = 1;
+    } else {
+        gt_obj_st ** tmp = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child + 1));
         if (!tmp) {
             return false;
         }
         parent->child = tmp;
-        parent->cap_child = new_cap;
+        parent->child[parent->cnt_child++] = obj;
     }
-    parent->child[parent->cnt_child++] = obj;
     // GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
     if (parent->row_layout) {
         // row calc width
@@ -270,21 +275,23 @@ static GT_ATTRIBUTE_RAM_TEXT bool _create_new_screen_obj(gt_obj_st * obj) {
         return false;
     }
 
-    if (disp->cnt_scr >= disp->cap_scr) {
-        /** Grow capacity (4 -> 8 -> 16 ...). Realloc only on growth and the
-         *  pointer is updated atomically, mirroring _add_obj_to_parent; the
-         *  delete path never reallocs so a concurrent screen scan is safe. */
-        uint16_t new_cap = disp->cap_scr ? disp->cap_scr * 2 : 4;
-        gt_obj_st ** tmp = disp->screens
-            ? (gt_obj_st **)gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * new_cap)
-            : (gt_obj_st **)gt_mem_malloc(sizeof(gt_obj_st *) * new_cap);
+    if (disp->screens == NULL) {
+        disp->cnt_scr = 0;
+        gt_obj_st ** screens = gt_mem_malloc(sizeof(gt_obj_st *));
+        if (!screens) {
+            return false;
+        }
+        screens[0] = obj;
+        disp->screens = screens;
+        disp->cnt_scr = 1;
+    } else {
+        gt_obj_st ** tmp = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
         if (!tmp) {
             return false;
         }
         disp->screens = tmp;
-        disp->cap_scr = new_cap;
+        disp->screens[disp->cnt_scr++] = obj;
     }
-    disp->screens[disp->cnt_scr++] = obj;
     obj->area.x = 0;
     obj->area.y = 0;
     obj->area.w = gt_disp_get_res_hor(NULL);
@@ -357,7 +364,7 @@ obj_lb:
 
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
 {
-    if (NULL == obj || NULL == obj->classes || GT_OBJ_LIFE_ZOMBIE == obj->life_state) {
+    if (NULL == obj || NULL == obj->classes) {
         return GT_TYPE_UNKNOWN;
     }
     if (obj->classes->type >= GT_TYPE_TOTAL) {
@@ -371,7 +378,7 @@ gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
 
 bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
 {
-    if (NULL == obj || NULL == obj->classes || GT_OBJ_LIFE_ZOMBIE == obj->life_state) {
+    if (NULL == obj || NULL == obj->classes) {
         return GT_TYPE_UNKNOWN == type ? true : false;
     }
     if (GT_TYPE_TOTAL == type) {
@@ -427,80 +434,41 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
 
 gt_res_t _gt_obj_class_destroy(struct gt_obj_s * self)
 {
-    gt_obj_type_et type = gt_obj_class_get_type(self);
-    if (GT_TYPE_UNKNOWN == type) {
-        /** includes NULL/invalid and ZOMBIE: idempotent no-op */
-        GT_LOGW(GT_LOG_TAG_CHECK, "Want to destroy unknown obj: %p(%d)", self, type);
+    gt_obj_st * ret_p = NULL;
+    if (gt_obj_is_type(self, GT_TYPE_UNKNOWN)) {
+        GT_LOGW(GT_LOG_TAG_CHECK, "Want to destroy unknown obj: %p(%d)", self, gt_obj_class_get_type(self));
         return GT_RES_FAIL;
     }
-    if (GT_OBJ_LIFE_ALIVE != self->life_state) {
-        /** Re-entrant destroy while a destroy is already in progress (DESTROYING)
-         *  or already completed (ZOMBIE): idempotent no-op. */
-        return GT_RES_FAIL;
-    }
+    _destroy_and_free_children(self, true);
 
-    bool has_child = (NULL != self->child && 0 != self->cnt_child);
-
-#if GT_USE_LAYER_TOP
-    if (gt_disp_get_layer_top() == self) {
-        /** Do not release the layer-top object itself. Preserve the original
-         *  semantics: its children are destroyed and it is unlinked from the
-         *  screen registry, but the shell stays alive. */
-        if (has_child) {
-            gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETE, NULL);
-        }
-        _destroy_children_array(self);
-        if (has_child) {
-            gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
-        }
-        _gt_obj_class_destroy_screen(self);
-        _gt_scr_stack_remove_pop_scr(self);
-        return GT_RES_OK;
-    }
-#endif
-
-    /** Phase 1 gate: block re-entrant destroy while still letting
-     *  gt_obj_is_type() resolve the real type so the teardown notifications
-     *  (CHANGE_CHILD_DELETE/DELETED, CHANGE_DELETED) reach this object. */
-    self->life_state = GT_OBJ_LIFE_DESTROYING;
-
-    /** Phase 1a: destroy the subtree first (original event order:
-     *  CHANGE_CHILD_DELETE -> children -> CHANGE_CHILD_DELETED). */
-    if (has_child) {
-        gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETE, NULL);
-    }
-    _destroy_children_array(self);
-    if (has_child) {
-        gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
-    }
-
-    /** Phase 1b: unlink self from the screen registry / parent child array. */
-    if (GT_TYPE_SCREEN == type) {
-        if (NULL == _gt_obj_class_destroy_screen(self)) {
+    if (gt_obj_is_type(self, GT_TYPE_SCREEN)) {
+        ret_p = _gt_obj_class_destroy_screen(self);
+        if (NULL == ret_p) {
             GT_LOGW(GT_LOG_TAG_CHECK, "Destroy screen(%p) failed", self);
         }
         _gt_scr_stack_remove_pop_scr(self);
 #if _GT_OBJ_CLASS_SCREEN_LOG
-        GT_LOGD(GT_LOG_TAG_CHECK, "Destroy scr: %p(%d)", self, type);
+        GT_LOGD(GT_LOG_TAG_CHECK, "Destroy scr: %p(%d)", self, gt_obj_class_get_type(self));
 #endif
     } else {
-        if (NULL == _gt_obj_class_destroy_from_parent(self)
-            && self->parent && self->parent->child && self->parent->cnt_child) {
+        ret_p = _gt_obj_class_destroy_from_parent(self);
+        if (NULL == ret_p && self->parent && self->parent->child && self->parent->cnt_child) {
             GT_LOGW(GT_LOG_TAG_CHECK, "Destroy obj: %p(%d) from parent: %p(%d) failed", self,
-                type, self->parent, gt_obj_class_get_type(self->parent));
+                gt_obj_class_get_type(self), self->parent, gt_obj_class_get_type(self->parent));
         }
 #if _GT_OBJ_CLASS_WIDGETS_LOG
-        GT_LOGD(GT_LOG_TAG_CHECK, "Destroy obj: %p(%d)", self, type);
+        GT_LOGD(GT_LOG_TAG_CHECK, "Destroy obj: %p(%d)", self, gt_obj_class_get_type(self));
 #endif
     }
 
-    /** Phase 1c: teardown property (CHANGE_DELETED, anim/indev/event unlink,
-     *  _deinit_cb, scroll_cold). */
-    _gt_obj_class_destroy_property(self);
-
-    /** Phase 2: mark ZOMBIE and defer reclamation to the next safe point. */
-    self->life_state = GT_OBJ_LIFE_ZOMBIE;
-    gt_recycle_defer(self);
+#if GT_USE_LAYER_TOP
+    if (gt_disp_get_layer_top() == self) {
+        /** Do not release layer top object */
+        return GT_RES_OK;
+    }
+#endif
+    _gt_obj_class_destroy_self(self);
+    self = NULL;
     return GT_RES_OK;
 }
 
@@ -510,13 +478,48 @@ gt_res_t _gt_obj_class_destroy_children(struct gt_obj_s * self)
         GT_LOGW(GT_LOG_TAG_CHECK, "Want to destroy unknown obj's childs: %p(%d)", self, gt_obj_class_get_type(self));
         return GT_RES_FAIL;
     }
-    /** Unlink every child up front so the container is empty the moment this
-     *  call returns (a handler that rebuilds the list right after clearing it
-     *  starts from index 0). Memory reclamation is deferred via the GC queue,
-     *  so a child still referenced by the in-flight event dispatch chain is
-     *  safe: its memory is not touched until the dispatch drains and the queue
-     *  is flushed at the next safe point. */
-    _destroy_children_array(self);
+    /** Unlink every child from the parent up front so the container is empty the
+     *  moment this call returns: a handler that rebuilds the list right after
+     *  clearing it (list item click -> clear -> add) must start from index 0 and
+     *  must not be wiped by a deferred clear that fires ~10ms later.
+     *
+     *  Only the memory release is deferred. A child still referenced by the
+     *  in-flight event dispatch chain cannot be freed here or the dispatcher
+     *  would keep walking freed memory, so it is handed to gt_obj_destroy()'s
+     *  timer instead. Its ->parent is cleared so a later deferred destroy never
+     *  dereferences a parent that may already have been freed. */
+    gt_obj_st ** child_arr = self->child;
+    gt_size_t cnt = self->cnt_child;
+    self->child = NULL;
+    self->cnt_child = 0;
+    if (NULL == child_arr) {
+        cnt = 0;
+    }
+    for (gt_size_t i = cnt - 1; i >= 0; i--) {
+        gt_obj_st * child = child_arr[i];
+        if (NULL == child) {
+            continue;
+        }
+        if (_gt_obj_in_event_dispatch(child)) {
+            child->using_sta = false;
+            /** Detach from the parent: the child is destroyed later by its own
+             *  deferred timer, but the parent (self) may already be freed by then.
+             *  A dangling parent would be dereferenced by the event bubble
+             *  (CHANGE_CHILD_DELETE) and by _gt_obj_class_destroy_from_parent(),
+             *  both of which read parent->classes/child -> use-after-free. */
+            child->parent = NULL;
+            gt_obj_destroy(child);
+        } else {
+            /** Parent is already unlinked (self->child == NULL), so
+             *  _gt_obj_class_destroy_from_parent() safely returns NULL inside
+             *  _gt_obj_class_destroy(). Use the full recursive destroy so nested
+             *  children (list item icons/labels) are released too. */
+            _gt_obj_class_destroy(child);
+        }
+    }
+    if (child_arr) {
+        gt_mem_free(child_arr);
+    }
     gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
     return GT_RES_OK;
 }

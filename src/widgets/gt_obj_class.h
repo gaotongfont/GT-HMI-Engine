@@ -18,21 +18,8 @@ extern "C" {
 #include "../core/gt_event.h"
 
 /* define ---------------------------------------------------------------*/
-#ifndef GT_OBJ_CHILD_ARRAY_SHRINK
-    /**
-     * @brief Shrink a child/screens pointer array once its used count falls far
-     *      below the reserved capacity (high-watermark 1/4), releasing the
-     *      otherwise permanently-kept continuous memory. Deleting shrinks by
-     *      realloc and therefore moves the array base; the two-phase destroy
-     *      iterators already snapshot the count and bounds-check, so a shrink
-     *      in the delete path is safe in the single-threaded UI loop. The
-     *      shrink line (1/4 occupancy) and the grow line (full) are 4x apart,
-     *      so occupancy jitter near the threshold does not thrash reallocs.
-     *      1: shrink at 1/4 occupancy (embedded-friendly) [default]
-     *      0: never shrink ("delete never reallocs" strongest guarantee)
-     */
-    #define GT_OBJ_CHILD_ARRAY_SHRINK                1
-#endif
+
+
 
 /* typedef --------------------------------------------------------------*/
 /** Control drawing logic */
