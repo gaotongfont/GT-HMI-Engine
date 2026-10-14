@@ -8,9 +8,22 @@ build/
 obj/
 bin/
 
+# HAF host/CI build output. The framework source, public headers, tests,
+# schemas and tools remain tracked; everything regenerated below haf/build is
+# disposable (CMake files, executables, generated C, reports and Designer
+# adapter scratch output).
+haf/build/
+haf/**/CMakeFiles/
+haf/**/Testing/
+haf/**/CTestTestfile.cmake
+haf/**/cmake_install.cmake
+haf/**/Makefile
+haf/**/compile_commands.json
+
 .cache/
 **/*.o
 **/*.d
+**/*.c.obj
 
 **/claude.md
 **/CLAUDE.md

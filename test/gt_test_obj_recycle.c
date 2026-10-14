@@ -62,6 +62,12 @@
 /** widget create+destroy pairs per churn frame */
 #define _STRESS_PAGE_CHURN_PER_FRAME  8
 
+/** bulk-destroy phase: children of one tree destroyed in a single frame. Each
+ *  child carries one leaf, so the tree defers ~1802 slots (objects + child
+ *  arrays), far above GT_RECYCLE_QUEUE_MAX(512): exercises the recycle queue's
+ *  on-demand growth instead of an assert. */
+#define _STRESS_BULK_CHILD            600
+
 /** fuzz/soak 时长（分钟）：make GT_STRESS_MINUTES=N 覆盖，默认 2 分钟 */
 #ifndef GT_STRESS_MINUTES
     #define GT_STRESS_MINUTES            2
@@ -102,6 +108,7 @@ typedef enum {
     _STRESS_PH_CHURN,
     _STRESS_PH_STACK,
     _STRESS_PH_PAGE_CHURN,
+    _STRESS_PH_BULK,
     _STRESS_PH_FUZZ,
     _STRESS_PH_DONE,
 }_stress_phase_et;
@@ -361,9 +368,31 @@ static void _stress_page_churn(void)
         uint32_t used_now = (uint32_t)info.used;
         _STRESS_LOG("[recycle] page-churn end: used=%u base=%u delta=%d",
             used_now, _s_used_base, (int32_t)(used_now - _s_used_base));
-        _s_phase = _STRESS_PH_FUZZ;
+        _s_phase = _STRESS_PH_BULK;
         _s_frame = 0;
     }
+}
+
+/**
+ * @brief Destroy one large subtree in a single frame to exercise the recycle
+ *        queue's on-demand growth: ~1802 deferred slots force 512 -> 1024 ->
+ *        2048 (the flush then shrinks back to 512). Must not abort.
+ */
+static void _stress_bulk_destroy(void)
+{
+    gt_obj_st * root = gt_obj_create(NULL);
+    if (NULL == root) {
+        _STRESS_LOG("[recycle] bulk-destroy abort: no root");
+        return;
+    }
+    for (uint16_t i = 0; i < _STRESS_BULK_CHILD; ++i) {
+        gt_obj_st * w = gt_obj_create(root);
+        if (NULL != w) {
+            gt_obj_create(w);
+        }
+    }
+    gt_obj_destroy(root);
+    _STRESS_LOG("[recycle] bulk-destroy ok (%d children)", _STRESS_BULK_CHILD);
 }
 
 /* fuzz/soak helpers -----------------------------------------------------*/
@@ -563,6 +592,11 @@ void _gt_test_obj_destroy_stress(void)
 
         case _STRESS_PH_PAGE_CHURN:
             _stress_page_churn();
+            break;
+
+        case _STRESS_PH_BULK:
+            _stress_bulk_destroy();
+            _s_phase = _STRESS_PH_FUZZ;
             break;
 
         case _STRESS_PH_FUZZ:
