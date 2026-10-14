@@ -31,6 +31,7 @@ static void _read_cb(gt_indev_drv_st * drv, gt_indev_data_st * data) {
     data->point.x = touch_get_x();
     data->point.y = touch_get_y();
     data->state   = touch_is_pressed() ? GT_INDEV_STATE_PRESSED : GT_INDEV_STATE_RELEASED;
+    data->point_valid = 1;  // Set when coordinates are valid, including RELEASED samples.
 }
 ```
 
@@ -63,10 +64,12 @@ static void _read_cb(gt_indev_drv_st * drv, gt_indev_data_st * data) {
 data->point.x = touch_get_x();
 data->point.y = touch_get_y();
 data->state   = touch_is_pressed() ? GT_INDEV_STATE_PRESSED : GT_INDEV_STATE_RELEASED;
+data->point_valid = 1;  // Required to consume coordinates reported with RELEASED.
 // 无数据时返回 GT_INDEV_STATE_INVALID
 ```
 
 - `RELEASED` 只上报一次，之后返回 `INVALID`
+- 若 `RELEASED` 帧包含最后一个有效坐标，设置 `data->point_valid = 1`；无坐标时保持为 `0`
 - `PRESSED` 持续上报，引擎靠它处理长按和滚动
 
 ### GT_INDEV_TYPE_KEYPAD（键盘）
