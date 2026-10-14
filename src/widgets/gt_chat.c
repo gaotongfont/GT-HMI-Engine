@@ -126,6 +126,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _msg_anim_exec_cb(void * obj, int32_t count);
 static GT_ATTRIBUTE_RAM_TEXT void _msg_segment_click_cb(gt_event_st * e);
 static bool _gt_chat_start_message_play(_gt_chat_st * style, uint8_t index, gt_chat_play_segment_te segment);
 static void _gt_chat_free_msg_text(_gt_chat_param_st * msg_p);
+static bool _gt_chat_set_source_text(_gt_chat_st * style, uint8_t index,
+                                     const char * text, uint16_t len);
+static bool _gt_chat_append_source_text(_gt_chat_st * style, uint8_t index,
+                                        const char * text);
 static bool _gt_chat_set_translation(_gt_chat_st * style, uint8_t index, const char * translation);
 static void _gt_chat_render_translation(_gt_chat_st * style, uint8_t index, uint8_t frame);
 static void _gt_chat_update_tips_area(_gt_chat_st * style, uint8_t index);
@@ -505,6 +509,15 @@ _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t t
     style->max_h += _gt_update_msg_area_idx(chat, style->msg_cnt, is_send);
     style->msg_cnt++;
 
+    /* Text messages must retain their source independently of the item
+     * widget.  Translation APIs operate on this stored value. */
+    if (type == GT_CHAT_TYPE_TEXT && msg &&
+        !_gt_chat_set_source_text(style, (uint8_t)(style->msg_cnt - 1), msg,
+                                  msg_len)) {
+        /* The visual item is still valid; it simply cannot accept a later
+         * translation until its source text can be stored. */
+    }
+
     chat->process_attr.scroll.y = chat->area.h - style->max_h;
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
 
@@ -523,6 +536,51 @@ static void _gt_chat_free_msg_text(_gt_chat_param_st * msg_p)
     msg_p->has_translation = 0;
     msg_p->translation_expanded = 0;
     msg_p->has_tips = 0;
+}
+
+/* Keep the source text used by the translation/playback layer in sync with
+ * the text currently stored by the item widget. */
+static bool _gt_chat_set_source_text(_gt_chat_st * style, uint8_t index,
+                                     const char * text, uint16_t len)
+{
+    if (!style || index >= style->msg_cnt || !style->msg_list[index].msg_obj ||
+        style->msg_list[index].type != GT_CHAT_TYPE_TEXT || (!text && len)) {
+        return false;
+    }
+
+    char * copy = NULL;
+    if (text && len) {
+        copy = (char *)gt_mem_malloc((uint32_t)len + 1);
+        if (!copy) return false;
+        gt_memcpy(copy, text, len);
+        copy[len] = '\0';
+    }
+    if (style->msg_list[index].source_text) {
+        gt_mem_free(style->msg_list[index].source_text);
+    }
+    style->msg_list[index].source_text = copy;
+    return true;
+}
+
+static bool _gt_chat_append_source_text(_gt_chat_st * style, uint8_t index,
+                                        const char * text)
+{
+    if (!style || index >= style->msg_cnt || !style->msg_list[index].msg_obj ||
+        style->msg_list[index].type != GT_CHAT_TYPE_TEXT || !text) {
+        return text == NULL;
+    }
+
+    _gt_chat_param_st * msg_p = &style->msg_list[index];
+    uint32_t old_len = msg_p->source_text ? (uint32_t)strlen(msg_p->source_text) : 0;
+    uint32_t add_len = (uint32_t)strlen(text);
+    char * copy = (char *)gt_mem_malloc(old_len + add_len + 1);
+    if (!copy) return false;
+    if (old_len) gt_memcpy(copy, msg_p->source_text, old_len);
+    if (add_len) gt_memcpy(copy + old_len, text, add_len);
+    copy[old_len + add_len] = '\0';
+    if (msg_p->source_text) gt_mem_free(msg_p->source_text);
+    msg_p->source_text = copy;
+    return true;
 }
 
 static bool _gt_chat_set_translation(_gt_chat_st * style, uint8_t index, const char * translation)
@@ -633,7 +691,13 @@ _gt_chat_append_msg(gt_obj_st* chat, const char* msg, bool is_scroll)
 
     gt_obj_st * obj = style->msg_list[index].msg_obj;
 
-    if(style->item_cb.append_text_cb){
+    if (!_gt_chat_append_source_text(style, (uint8_t)index, msg)) return NULL;
+
+    if (style->msg_list[index].has_translation &&
+        style->msg_list[index].source_text) {
+        _gt_chat_render_translation(style, (uint8_t)index,
+                                    GT_SYMBOL_VOICE_PLAY - 1);
+    } else if(style->item_cb.append_text_cb){
         style->item_cb.append_text_cb(obj, msg);
     }
 
@@ -658,7 +722,16 @@ _gt_chat_replace_msg(gt_obj_st* chat, const char* msg, bool is_scroll)
 
     gt_obj_st * obj = style->msg_list[index].msg_obj;
 
-    style->item_cb.set_text_cb(obj, msg);
+    if (!_gt_chat_set_source_text(style, (uint8_t)index, msg,
+                                  msg ? (uint16_t)strlen(msg) : 0)) return NULL;
+
+    if (style->msg_list[index].has_translation &&
+        style->msg_list[index].source_text) {
+        _gt_chat_render_translation(style, (uint8_t)index,
+                                    GT_SYMBOL_VOICE_PLAY - 1);
+    } else {
+        style->item_cb.set_text_cb(obj, msg);
+    }
 
     style->max_h -= (obj->area.h + _MSG_SPACE_Y);
     style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
@@ -681,7 +754,15 @@ _gt_chat_replace_msg_by_len(gt_obj_st* chat, const char* msg, uint16_t msg_len, 
 
     gt_obj_st * obj = style->msg_list[index].msg_obj;
 
-    style->item_cb.set_text_by_len_cb(obj, msg, msg_len);
+    if (!_gt_chat_set_source_text(style, (uint8_t)index, msg, msg_len)) return NULL;
+
+    if (style->msg_list[index].has_translation &&
+        style->msg_list[index].source_text) {
+        _gt_chat_render_translation(style, (uint8_t)index,
+                                    GT_SYMBOL_VOICE_PLAY - 1);
+    } else {
+        style->item_cb.set_text_by_len_cb(obj, msg, msg_len);
+    }
 
     style->max_h -= (obj->area.h + _MSG_SPACE_Y);
     style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
@@ -1086,11 +1167,6 @@ static gt_obj_st * _gt_chat_add_translated(gt_obj_st * chat, const char * source
     _gt_chat_st * style = (_gt_chat_st *)chat;
     uint8_t index = (uint8_t)(style->msg_cnt - 1);
     _gt_chat_param_st * msg_p;
-    uint32_t len = (uint32_t)strlen(source);
-    style->msg_list[index].source_text = (char *)gt_mem_malloc(len + 1);
-    if (!style->msg_list[index].source_text) return item;
-    gt_memcpy(style->msg_list[index].source_text, source, len);
-    style->msg_list[index].source_text[len] = '\0';
     _gt_chat_set_translation(style, index, translation);
     msg_p = &style->msg_list[index];
     /* Invisible hit-test objects: do not use gt_btn here, because a btn
