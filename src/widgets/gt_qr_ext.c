@@ -105,11 +105,16 @@ void _qr_ext_init_cb(gt_obj_st * obj)
     uint32_t width = size + (style->margin << 1);
     uint16_t mag_w = style->margin, mag_h = style->margin;
 
-    if(width > obj->area.w) {
+    /* Auto-grow only when the user never set a size (area stays 0 from
+     * create). Growing unconditionally would undo a later gt_obj_set_size()
+     * shrink on every paint (P1-6). A user area smaller than the QR keeps
+     * the QR centered; modules outside the area are clipped by the draw
+     * pipeline (gt_area_intersect_get). */
+    if(0 == obj->area.w) {
         obj->area.w = width;
     }
 
-    if(width > obj->area.h) {
+    if(0 == obj->area.h) {
         obj->area.h = width;
     }
 
@@ -224,6 +229,7 @@ void gt_qr_ext_set_text_by_len(gt_obj_st * obj, const char * text, int len)
     else if(old_len == len) {
         gt_memcpy(style->text, text, old_len);
         style->text[old_len] = '\0';
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
         return ;
     }
 
@@ -282,6 +288,7 @@ void gt_qr_ext_set_text(gt_obj_st * obj, const char * fmt, ...)
         va_start(args2, fmt);
         vsnprintf(style->text,  size + 1, fmt, args2);
         va_end(args2);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
         return ;
     }
 
@@ -322,6 +329,7 @@ void gt_qr_ext_set_module_size(gt_obj_st * obj, uint8_t size)
 
     _gt_qr_ext_st * style = (_gt_qr_ext_st *)obj;
     style->module_size = size;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_qr_ext_set_module_color(gt_obj_st * obj, gt_color_t color)
@@ -332,6 +340,7 @@ void gt_qr_ext_set_module_color(gt_obj_st * obj, gt_color_t color)
 
     _gt_qr_ext_st * style = (_gt_qr_ext_st *)obj;
     style->module_color = color;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_qr_ext_set_margin(gt_obj_st * obj, uint8_t margin)
@@ -342,6 +351,7 @@ void gt_qr_ext_set_margin(gt_obj_st * obj, uint8_t margin)
 
     _gt_qr_ext_st * style = (_gt_qr_ext_st *)obj;
     style->margin = margin;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_qr_ext_set_version(gt_obj_st * obj, uint8_t version)
@@ -356,6 +366,7 @@ void gt_qr_ext_set_version(gt_obj_st * obj, uint8_t version)
 
     _gt_qr_ext_st * style = (_gt_qr_ext_st *)obj;
     style->version = version;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_qr_ext_set_ecc_level(gt_obj_st * obj, gt_qr_ecc_level_te ecc_level)
@@ -366,6 +377,7 @@ void gt_qr_ext_set_ecc_level(gt_obj_st * obj, gt_qr_ecc_level_te ecc_level)
 
     _gt_qr_ext_st * style = (_gt_qr_ext_st *)obj;
     style->ecc_level = ecc_level;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_qr_ext_set_mask(gt_obj_st * obj, gt_qr_mask_te mask)
@@ -376,6 +388,7 @@ void gt_qr_ext_set_mask(gt_obj_st * obj, gt_qr_mask_te mask)
 
     _gt_qr_ext_st * style = (_gt_qr_ext_st *)obj;
     style->mask = mask;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 

@@ -285,7 +285,7 @@ void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
     GT_CHECK_BACK(style->barcode);
     gt_memcpy(style->barcode, code, size);
     style->barcode[size] = '\0';
-    // gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family)
@@ -305,6 +305,7 @@ void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family)
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.hri_type = family;
+    gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
@@ -334,6 +335,7 @@ void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.upc_e_sys = value;
+    gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 #endif  /** GT_CFG_ENABLE_BARCODE */
