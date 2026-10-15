@@ -27,6 +27,16 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief One key point of a spectrum line.
+ *
+ * @note Coordinate convention (easy to mistake for a bug): the Y used for
+ *       drawing is taken from get_gen_next(&gen), NOT from point.y — so
+ *       gen.min / gen.max / gen.cur must be in the SAME coordinate system
+ *       as point.y (screen-absolute Y, e.g. a band like 140~180). Feeding
+ *       small local values (e.g. ±18) places the whole line outside the
+ *       widget and it is fully clipped = looks like "not rendering".
+ */
 typedef struct {
     gt_point_st point;
     gt_generator_st gen;

@@ -66,6 +66,8 @@ typedef struct _gt_arc_s {
 
     gt_color_t act_color;
     gt_color_t knob_color;
+    gt_color_t knob_dot_color;      ///< knob-dot color, valid when knob_dot_color_custom (O-3)
+    uint8_t   knob_dot_color_custom;///< 0: knob dot follows knob_color (default)
 
     uint16_t knob_width;
 
@@ -236,7 +238,8 @@ static void _init_cb(gt_obj_st * obj)
         gt_rounded_area_get(dot_angle, dot_ring_r, style->knob_dot_w, &dot_area);
         dot_area.x += dot_center.x;
         dot_area.y += dot_center.y;
-        arc_attr.color = style->knob_color;
+        arc_attr.color = style->knob_dot_color_custom
+                       ? style->knob_dot_color : style->knob_color;
         arc_attr.img = NULL;
 #if GT_USE_GRADIENT
         arc_attr.grad = NULL;
@@ -1186,6 +1189,25 @@ void gt_arc_set_knob_color(gt_obj_st* obj, gt_color_t color)
     }
     _gt_arc_st * style = (_gt_arc_st * )obj;
     style->knob_color = color;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+/**
+ * @brief Set an independent color for the knob indicator dot (task O-3).
+ *        By default the dot shares the knob color, so calling this is the
+ *        only way to get a two-tone center effect. Enable the dot first
+ *        via gt_arc_set_knob_dot() or the dot is not drawn at all.
+ * @param obj arc obj
+ * @param color knob dot color
+ */
+void gt_arc_set_knob_dot_color(gt_obj_st* obj, gt_color_t color)
+{
+    if( false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_arc_st * style = (_gt_arc_st * )obj;
+    style->knob_dot_color = color;
+    style->knob_dot_color_custom = 1;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

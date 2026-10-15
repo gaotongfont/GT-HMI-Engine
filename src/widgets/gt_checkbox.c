@@ -31,6 +31,7 @@ typedef struct _gt_checkbox_s {
     gt_obj_st   obj;
     char *      text;
     gt_color_t  font_color;
+    gt_color_t  selected_color;
     gt_font_info_st font_info;
     uint8_t     space_x;
     uint8_t     space_y;
@@ -93,8 +94,8 @@ static void _init_cb(gt_obj_st * obj) {
     if (gt_obj_get_state(obj) == GT_STATE_PRESSED) {
         rect_attr.reg.is_fill = 1;
         rect_attr.border_width = 0;
-        rect_attr.bg_color = gt_color_hex(0x409EFF);
-        rect_attr.border_color = gt_color_hex(0x409EFF);
+        rect_attr.bg_color = style->selected_color;
+        rect_attr.border_color = style->selected_color;
     } else {
         rect_attr.reg.is_fill = 1;
         rect_attr.border_width = 2;
@@ -213,6 +214,7 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent)
 
     gt_font_info_init(&style->font_info);
     style->font_color           = gt_color_black();
+    style->selected_color       = gt_color_hex(0x409EFF);
     style->space_x              = 0;
     style->space_y              = 0;
 
@@ -364,6 +366,51 @@ void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color)
     checkbox->use_theme = 0;
     gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
 }
+
+/**
+ * @brief Set the check box fill color used in the checked state.
+ *        Previously hardcoded to 0x409EFF (task O-1).
+ * @param checkbox checkbox obj
+ * @param color fill color of the box when checked
+ */
+void gt_checkbox_set_selected_color(gt_obj_st * checkbox, gt_color_t color)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return;
+    }
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
+    style->selected_color = color;
+    checkbox->use_theme = 0;
+    gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+/**
+ * @brief Check or uncheck the box programmatically (task O-2).
+ *        Replaces the borrowed-state workaround _gt_obj_set_state(cb, 1).
+ * @param checkbox checkbox obj
+ * @param checked true to check, false to uncheck
+ */
+void gt_checkbox_set_checked(gt_obj_st * checkbox, bool checked)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return;
+    }
+    gt_obj_set_state(checkbox, checked ? GT_STATE_PRESSED : GT_STATE_NONE);
+    gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+/**
+ * @brief Get the checked state (task O-2).
+ * @param checkbox checkbox obj
+ * @return true when the box is checked
+ */
+bool gt_checkbox_get_checked(gt_obj_st * checkbox)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return false;
+    }
+    return GT_STATE_PRESSED == gt_obj_get_state(checkbox);
+}
 void gt_checkbox_set_font_thick_en(gt_obj_st * checkbox, uint8_t thick)
 {
     if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
@@ -443,6 +490,7 @@ static void _apply_theme_cb(gt_obj_st * obj) {
     _gt_checkbox_st * style = (_gt_checkbox_st *)obj;
     obj->bgcolor   = t->bg_card;
     style->font_color = t->text_primary;
+    style->selected_color = t->accent;
     obj->use_theme = 1;
 }
 

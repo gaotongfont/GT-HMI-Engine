@@ -475,6 +475,8 @@ void gt_radio_set_selected_color(gt_obj_st * radio, gt_color_t color)
     }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->selected_color = color;
+    radio->use_theme = 0;
+    gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 #endif  /** GT_CFG_ENABLE_RADIO */

@@ -338,6 +338,39 @@ void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
     gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+/**
+ * @brief Query the natural (content-derived) barcode size without drawing
+ *        (task O-4). The widget is rendered top-left anchored at its
+ *        position with this size, so the caller can re-center it with
+ *        gt_obj_set_pos() after changing code text / type / mode_w / mode_h.
+ * @param barcode barcode obj
+ * @param w out: natural width in px (dot width + 2px indent each side)
+ * @param h out: natural height in px (mode_h, floored at 10px)
+ */
+void gt_barcode_get_natural_size(gt_obj_st * barcode, uint16_t * w, uint16_t * h)
+{
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
+        return;
+    }
+    if (NULL == w || NULL == h) {
+        return;
+    }
+    _gt_barcode_st * widget = (_gt_barcode_st * )barcode;
+
+    /* probe on a copy: gt_barcode_get_w_and_h() may tweak style fields */
+    barcode_st probe;
+    gt_memcpy(&probe, &widget->info, sizeof(probe));
+    probe.pdat = NULL;
+    probe.pdat_size = 0;
+
+    *w = 0;
+    if (gt_barcode_get_w_and_h(&probe) || probe.ret_param.dot_w > 0) {
+        *w = (uint16_t)(probe.ret_param.dot_w + 4);
+    }
+    *h = (widget->info.mode_h < BARCODE_LINE_NUMB)
+       ? (uint16_t)BARCODE_LINE_NUMB : (uint16_t)widget->info.mode_h;
+}
+
 #endif  /** GT_CFG_ENABLE_BARCODE */
 
 /* end of file ----------------------------------------------------------*/

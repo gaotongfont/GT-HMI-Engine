@@ -108,6 +108,15 @@ void gt_arc_set_bg_img_raw(gt_obj_st * obj, _gt_img_dsc_st * raw);
 void gt_arc_set_knob_img(gt_obj_st * obj, char * src);
 
 /**
+ * @brief Set an independent color for the knob indicator dot (O-3).
+ *        Default: the dot shares the knob color (zero visual change);
+ *        set a color here for a two-tone center effect.
+ * @param obj arc obj
+ * @param color knob dot color
+ */
+void gt_arc_set_knob_dot_color(gt_obj_st* obj, gt_color_t color);
+
+/**
  * @brief Set the arc knob image from a RAM raw image descriptor.
  *        The descriptor must remain valid for the lifetime of the widget.
  *        Passing NULL clears the raw image and reverts to file-path mode.

@@ -56,6 +56,16 @@ void gt_barcode_set_code_text(gt_obj_st * barcode , char* code);
  */
 void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family);
 void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family);
+
+/**
+ * @brief Query the natural (content-derived) barcode size without drawing
+ *        (O-4). Use it to re-center the widget after changing code text /
+ *        type / mode_w / mode_h — rendering is top-left anchored.
+ * @param barcode barcode obj
+ * @param w out: natural width in px
+ * @param h out: natural height in px
+ */
+void gt_barcode_get_natural_size(gt_obj_st * barcode, uint16_t * w, uint16_t * h);
 void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value);
 void gt_barcode_set_mode_h(gt_obj_st * barcode , uint8_t value);
 void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value);

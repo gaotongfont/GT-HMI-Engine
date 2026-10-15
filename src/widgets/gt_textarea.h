@@ -256,6 +256,21 @@ void gt_textarea_add_str_by_param(gt_obj_st * textarea, gt_textarea_param_st * p
 void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y);
 
 /**
+ * @brief Set the vertical gap between text lines; line height = font size
+ *        + line gap (task O-5)
+ * @param textarea textarea obj
+ * @param gap line gap in pixels
+ */
+void gt_textarea_set_line_gap(gt_obj_st * textarea, uint8_t gap);
+
+/**
+ * @brief Get the current line gap (task O-5)
+ * @param textarea textarea obj
+ * @return line gap in pixels
+ */
+uint8_t gt_textarea_get_line_gap(gt_obj_st * textarea);
+
+/**
  * @brief set textarea fonts size
  *
  * @param textarea obj pointer

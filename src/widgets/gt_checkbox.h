@@ -58,6 +58,27 @@ void gt_checkbox_set_text_by_len(gt_obj_st * checkbox, const char * text, uint16
 char * gt_checkbox_get_text(gt_obj_st * checkbox);
 
 void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color);
+
+/**
+ * @brief Set the check box fill color used in the checked state (O-1)
+ * @param checkbox checkbox obj
+ * @param color fill color of the box when checked
+ */
+void gt_checkbox_set_selected_color(gt_obj_st * checkbox, gt_color_t color);
+
+/**
+ * @brief Check or uncheck the box programmatically (O-2)
+ * @param checkbox checkbox obj
+ * @param checked true to check, false to uncheck
+ */
+void gt_checkbox_set_checked(gt_obj_st * checkbox, bool checked);
+
+/**
+ * @brief Get the checked state (O-2)
+ * @param checkbox checkbox obj
+ * @return true when the box is checked
+ */
+bool gt_checkbox_get_checked(gt_obj_st * checkbox);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_checkbox_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family);
