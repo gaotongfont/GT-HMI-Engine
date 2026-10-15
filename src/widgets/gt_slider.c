@@ -97,6 +97,8 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_slider_class = {
 
 
 /* static functions -----------------------------------------------------*/
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_slider_get_track_len(gt_obj_st * slider);
+
 static GT_ATTRIBUTE_RAM_TEXT uint16_t
 _gt_slider_get_tag_size(gt_obj_st * slider)
 {
@@ -109,7 +111,11 @@ _gt_slider_get_tag_size(gt_obj_st * slider)
         max = slider->area.w;
     }
 
-    return ((style->tag_size > 0 && style->tag_size <= max) ? style->tag_size : max);
+    uint16_t tag = (style->tag_size > 0 && style->tag_size <= max) ? style->tag_size : max;
+    /* clamp knob to track length so a direction/geometry mismatch cannot
+     * produce a knob larger than the track (P1-3 defensive) */
+    uint16_t len = _gt_slider_get_track_len(slider);
+    return tag > len ? len : tag;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT uint16_t
@@ -145,6 +151,31 @@ _gt_slider_get_offset_tag_size(gt_obj_st * slider) {
     uint16_t tag_vis = (size > 4) ? (size - 4) : size;
     /* include margin on both sides so offset max leaves room for the knob */
     return tag_vis + _SLIDER_TAG_INSIDE_MARGIN * 2;
+}
+
+/** Returns the track length along the current slider direction */
+static GT_ATTRIBUTE_RAM_TEXT uint16_t
+_gt_slider_get_track_len(gt_obj_st * slider) {
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    if (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) {
+        return slider->area.w;
+    }
+    if (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) {
+        return slider->area.h;
+    }
+    return 0;
+}
+
+/**
+ * @brief Clamped maximum pixel offset (track length minus tag size).
+ *        Never underflows: when direction and geometry do not match
+ *        (track shorter than the tag), returns 0 instead of wrapping.
+ */
+static GT_ATTRIBUTE_RAM_TEXT uint16_t
+_gt_slider_get_max_offset(gt_obj_st * slider) {
+    uint16_t len = _gt_slider_get_track_len(slider);
+    uint16_t tag = _gt_slider_get_offset_tag_size(slider);
+    return len > tag ? (uint16_t)(len - tag) : 0;
 }
 
 /**
@@ -288,14 +319,11 @@ _calc_touch_point_pos(gt_obj_st * obj) {
 static GT_ATTRIBUTE_RAM_TEXT gt_size_t
 _calc_pixel_offset_by_value(gt_obj_st * slider, gt_size_t value) {
     _gt_slider_st * style = (_gt_slider_st * )slider;
-    uint16_t tag_eff = _gt_slider_get_offset_tag_size(slider);
-    uint16_t max = 0;
+    uint16_t max = _gt_slider_get_max_offset(slider);
 
-    if( (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) ){
-        max = slider->area.w - tag_eff;
-    }
-    else if( (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) ){
-        max = slider->area.h - tag_eff;
+    if (style->end <= style->start) {
+        /** degenerate range: no offset to map */
+        return 0;
     }
 
     return (value - style->start) * max / (style->end - style->start);
@@ -317,14 +345,8 @@ static GT_ATTRIBUTE_RAM_TEXT void
 _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
-    uint16_t max_offset = 0;
     uint16_t tag_size = _gt_slider_get_offset_tag_size(slider);
-    if(style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L){
-        max_offset = slider->area.w - tag_size;
-    }
-    else if(style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U){
-        max_offset = slider->area.h - tag_size;
-    }
+    uint16_t max_offset = _gt_slider_get_max_offset(slider);
 
     offset -= (tag_size >> 1);
 
@@ -335,6 +357,14 @@ _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
         style->offset = 0;
     } else {
         style->offset = offset;
+    }
+
+    if (0 == max_offset) {
+        /** track fully consumed by the tag (dir/geometry mismatch):
+         * clamp defensively instead of dividing by zero */
+        style->offset = 0;
+        style->pos = style->start;
+        return ;
     }
 
     gt_size_t tmp_pos = style->offset * (style->end - style->start) / max_offset + style->start;
@@ -441,16 +471,21 @@ _calc_all_layer_area(gt_obj_st * slider, gt_area_st * base, gt_area_st * val, gt
                 }
             }
         } else {
-            /* standard: tag protrudes, base inset by tag_orig/2 */
-            base->x = slider->area.x + (tag_orig >> 1);
-            base->w = slider->area.w - tag_orig;
+            /* standard: tag protrudes, base inset by tag_len/2;
+             * tag_len clamps tag size to track length so a direction/
+             * geometry mismatch cannot underflow base->w */
+            uint16_t len = slider->area.w;
+            uint16_t tag_len = tag_orig < len ? tag_orig : len;
+            uint16_t knob = tag_knob < len ? tag_knob : len;
+            base->x = slider->area.x + (tag_len >> 1);
+            base->w = len - tag_len;
             gt_area_copy(val, base);
             val->w = dist;
             if (style->dir == GT_BAR_DIR_HOR_R2L) {
                 val->x += (base->w - dist);
-                tag->x = base->x + base->w - dist - (tag_knob >> 1);
+                tag->x = base->x + base->w - dist - (knob >> 1);
             } else {
-                tag->x = base->x + dist - (tag_knob >> 1);
+                tag->x = base->x + dist - (knob >> 1);
             }
         }
 
@@ -488,15 +523,18 @@ _calc_all_layer_area(gt_obj_st * slider, gt_area_st * base, gt_area_st * val, gt
                 }
             }
         } else {
-            base->y = slider->area.y + (tag_orig >> 1);
-            base->h = slider->area.h - tag_orig;
+            uint16_t len = slider->area.h;
+            uint16_t tag_len = tag_orig < len ? tag_orig : len;
+            uint16_t knob = tag_knob < len ? tag_knob : len;
+            base->y = slider->area.y + (tag_len >> 1);
+            base->h = len - tag_len;
             gt_area_copy(val, base);
             val->h = dist;
             if (style->dir == GT_BAR_DIR_VER_D2U) {
                 val->y += (base->h - dist);
-                tag->y = base->y + base->h - dist - (tag_knob >> 1);
+                tag->y = base->y + base->h - dist - (knob >> 1);
             } else {
-                tag->y = base->y + dist - (tag_knob >> 1);
+                tag->y = base->y + dist - (knob >> 1);
             }
         }
     }
@@ -564,8 +602,13 @@ _init_cb(gt_obj_st * obj) {
         else if(style->pos > style->pos_max){
             style->pos = style->pos_max;
         }
-        _gt_slider_set_offset_by_pos(obj , style->pos);
     }
+
+    /* offset is derived from pos and the CURRENT geometry; geometry may have
+     * changed since the last layout (gt_obj_set_size / set_tag_size / parent
+     * layout move do not notify the widget), so recompute on every draw to
+     * keep the knob/fill consistent with the current track length. */
+    _gt_slider_set_offset_by_pos(obj , style->pos);
 
     gt_area_st area_base = {0}, area_val = {0}, tag_area = {0};
     gt_attr_rect_st rect_attr;
