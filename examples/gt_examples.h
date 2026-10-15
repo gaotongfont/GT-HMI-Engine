@@ -50,6 +50,10 @@ typedef enum {
     GT_EXAMPLE_SCR_SLIDER,
     GT_EXAMPLE_SCR_SLIDER_AB_REPEAT,
     GT_EXAMPLE_SCR_SLIDER_TAG_RAW,
+    GT_EXAMPLE_SCR_SLIDER_SELFTEST,
+    GT_EXAMPLE_SCR_QR_BARCODE_SELFTEST,
+    GT_EXAMPLE_SCR_O_OPTIM_SELFTEST,
+    GT_EXAMPLE_SCR_FONT_SELFTEST,
     GT_EXAMPLE_SCR_TEXTAREA,
     GT_EXAMPLE_SCR_RADIO,
     GT_EXAMPLE_SCR_SWITCH,
@@ -138,6 +142,10 @@ gt_obj_st * gt_examples_roller(void);
 gt_obj_st * gt_examples_slider(void);
 gt_obj_st * gt_examples_slider_ab_repeat(void);
 gt_obj_st * gt_examples_slider_tag_raw(void);
+gt_obj_st * gt_examples_slider_selftest(void);
+gt_obj_st * gt_examples_qr_barcode_selftest(void);
+gt_obj_st * gt_examples_o_optim_selftest(void);
+gt_obj_st * gt_examples_font_selftest(void);
 gt_obj_st * gt_examples_textarea(void);
 gt_obj_st * gt_examples_radio(void);
 gt_obj_st * gt_examples_switch(void);
