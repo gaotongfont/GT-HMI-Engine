@@ -1365,15 +1365,22 @@ void gt_cross_layout_hor_add_item(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver
         return ;
     }
 
-    _gt_vector_st* hor_itme = (_gt_vector_st *)_gt_vector_get_item(style->hor_items, ver_index);
-    if(!hor_itme){
-        hor_itme = _gt_vector_create(_default_items_free_cb, NULL);
-        GT_CHECK_BACK(hor_itme);
-        if (false == _gt_vector_add_item(style->hor_items, (void * )hor_itme)) {
-            _gt_vector_free(hor_itme);
+    /* Pad with empty sub-vectors so hor_items[i] stays aligned with ver_index,
+     * otherwise a group added for a higher ver_index first would be stored at
+     * the wrong slot and later groups would be appended into it. */
+    gt_size_t hor_group_count = _gt_vector_get_count(style->hor_items);
+    while (hor_group_count <= ver_index) {
+        _gt_vector_st* pad = _gt_vector_create(_default_items_free_cb, NULL);
+        GT_CHECK_BACK(pad);
+        if (false == _gt_vector_add_item(style->hor_items, (void * )pad)) {
+            _gt_vector_free(pad);
             return ;
         }
+        ++hor_group_count;
     }
+
+    _gt_vector_st* hor_itme = (_gt_vector_st *)_gt_vector_get_item(style->hor_items, ver_index);
+    GT_CHECK_BACK(hor_itme);
 
     if (false == _gt_vector_add_item(hor_itme, (void * )obj)) {
         return ;
