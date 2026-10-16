@@ -109,8 +109,10 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill    = 0;
-    rect_attr.border_width   = 1;
-    rect_attr.border_color   = radio->bgcolor;
+    rect_attr.border_width   = 2;
+    /* ring follows selected_color too (same accent rule as checkbox), so the
+     * whole circle accent (ring + selected dot) tracks gt_radio_set_selected_color */
+    rect_attr.border_color   = style->selected_color;
     rect_attr.bg_opa         = radio->opa;
     rect_attr.bg_color       = radio->bgcolor;
     rect_attr.radius         = area_base.h>>1;
@@ -225,9 +227,9 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent)
     }
 
     gt_font_info_init(&style->font_info);
+    style->font_color        = gt_color_black();
     style->space_x           = 0;
     style->space_y           = 0;
-
 
     obj->bgcolor = gt_color_white();
     style->selected_color = gt_color_hex(0x0F97FF);
@@ -477,6 +479,20 @@ void gt_radio_set_selected_color(gt_obj_st * radio, gt_color_t color)
     style->selected_color = color;
     radio->use_theme = 0;
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+/**
+ * @brief Get the selected state of the radio (task O-2, pairs with
+ *        gt_radio_set_selected).
+ * @param radio radio obj
+ * @return true when the radio is currently selected
+ */
+bool gt_radio_get_selected(gt_obj_st * radio)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return false;
+    }
+    return GT_STATE_PRESSED == gt_obj_get_state(radio);
 }
 
 #endif  /** GT_CFG_ENABLE_RADIO */

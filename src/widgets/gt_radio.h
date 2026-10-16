@@ -53,6 +53,14 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent);
 void gt_radio_set_selected(gt_obj_st * radio);
 
 /**
+ * @brief get radio selected state (pairs with gt_radio_set_selected)
+ *
+ * @param radio radio obj
+ * @return true: selected; false: not selected
+ */
+bool gt_radio_get_selected(gt_obj_st * radio);
+
+/**
  * @brief set radio text
  *
  * @param radio radio obj
