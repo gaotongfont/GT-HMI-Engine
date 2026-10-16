@@ -100,7 +100,9 @@ static void _init_cb(gt_obj_st * obj) {
         rect_attr.reg.is_fill = 1;
         rect_attr.border_width = 2;
         rect_attr.bg_color = gt_color_white();
-        rect_attr.border_color = gt_color_hex(0x409EFF);
+        /* unchecked border follows selected_color too, so the whole box
+         * accent (border + checked fill) tracks gt_checkbox_set_selected_color */
+        rect_attr.border_color = style->selected_color;
     }
     gt_area_st area = obj->area;
 
