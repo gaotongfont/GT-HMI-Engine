@@ -77,6 +77,7 @@ static const _menu_item_st _menu_items[] = {
     { "Vector",         GT_EXAMPLE_SCR_VECTOR },
     { "Viewport Fixed", GT_EXAMPLE_SCR_VIEWPORT_FIXED },
     { "Markdown",       GT_EXAMPLE_SCR_MD },
+    { "Markdown SelfTest", GT_EXAMPLE_SCR_MD_SELFTEST },
 };
 
 #define _MENU_ITEM_COUNT  (sizeof(_menu_items) / sizeof(_menu_items[0]))
