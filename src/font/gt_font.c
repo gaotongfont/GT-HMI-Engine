@@ -1540,6 +1540,44 @@ uint16_t gt_font_get_single_line_width(gt_font_info_st * info, const char * cons
 }
 
 /**
+ * @brief Check whether a Unicode code point is a full-width character.
+ *
+ * Full-width characters must advance by at least one em. Fonts that miss the
+ * glyph, or vector fonts that report an ink-bounds width, may otherwise return
+ * a half-width value and squeeze 30+ CJK characters into one line (M-3).
+ *
+ * @param unicode Unicode code point.
+ * @return true if the code point belongs to a full-width range.
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_font_unicode_is_full_width(uint32_t unicode) {
+    /** Fast reject: all ranges below start at U+1100, so ASCII, Latin,
+     *  digits and most symbols leave after a single comparison. */
+    if (unicode < 0x1100) {
+        return false;
+    }
+    /** Most common CJK range first: UTF-8 Chinese and GBK double-byte codes
+     *  both hit this branch immediately. */
+    if ((unicode >= 0x4E00 && unicode <= 0x9FFF) ||   /* CJK Unified Ideographs */
+        (unicode >= 0x3400 && unicode <= 0x4DBF) ||   /* CJK Ext A */
+        (unicode >= 0x1100 && unicode <= 0x115F) ||   /* Hangul Jamo */
+        (unicode >= 0x2E80 && unicode <= 0x303E) ||   /* CJK radicals / punctuation */
+        (unicode >= 0x3041 && unicode <= 0x33FF) ||   /* Kana, CJK compat */
+        (unicode >= 0xA000 && unicode <= 0xA4CF) ||   /* Yi */
+        (unicode >= 0xAC00 && unicode <= 0xD7A3) ||   /* Hangul Syllables */
+        (unicode >= 0xF900 && unicode <= 0xFAFF) ||   /* CJK Compatibility Ideographs */
+        (unicode >= 0xFE10 && unicode <= 0xFE19) ||   /* Vertical forms */
+        (unicode >= 0xFE30 && unicode <= 0xFE6F) ||   /* CJK compat forms */
+        (unicode >= 0xFF00 && unicode <= 0xFF60) ||   /* Fullwidth forms */
+        (unicode >= 0xFFE0 && unicode <= 0xFFE6) ||   /* Fullwidth signs */
+        (unicode >= 0x1F300 && unicode <= 0x1F64F) || /* Emoji (wide) */
+        (unicode >= 0x1F900 && unicode <= 0x1F9FF) ||
+        (unicode >= 0x20000 && unicode <= 0x2FA1F)) { /* CJK Ext B-F */
+        return true;
+    }
+    return false;
+}
+
+/**
  * @brief 已知 font_option 时直接计算字符宽度，跳过 _get_font_option 查表
  *        供 gt_draw.c 在 gt_font_get_dot 之后调用，避免重复查表
  */
@@ -1559,6 +1597,11 @@ GT_ATTRIBUTE_RAM_TEXT gt_font_size_t gt_font_get_one_word_width_by_option(
         gt_memset(font->res, 0, font_dot_w);
     }
     gt_size_t width = gt_font_get_font_width_inline(uni_or_gbk, option, font->info.size, font->info.gray, font->res);
+    /** Full-width contract: missing glyphs / ink-bounds width must never
+     *  squeeze a CJK (or other full-width) character below one em. */
+    if (width < font->info.size && _gt_font_unicode_is_full_width(uni_or_gbk)) {
+        return font->info.size;
+    }
     if (0 == width) {
         if (_gt_font_latin_check(uni_or_gbk)) {
             return _gt_font_latin_get_width(uni_or_gbk, font->info.size);

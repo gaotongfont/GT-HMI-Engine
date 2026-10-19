@@ -4312,8 +4312,18 @@ _gt_wu_line(_gt_draw_ctx_st * ctx,
     int32_t const nor_x = -dir_y;
     int32_t const nor_y =  dir_x;
 
-    /* half_w in integer pixels */
-    int32_t const half_w = (int32_t)(width >> 1);
+    /** Half width in Q16 pixel units. Using the integer half width here lost
+     *  odd widths entirely: width=1 became 0 and every pixel failed the
+     *  `sdf > 0` test, so diagonal 1px lines were never drawn. width=2 and
+     *  width=3 also collapsed to the same half width. */
+    int64_t const hw_q16 = ((int64_t)width << 16) >> 1;
+    /** Pixel centers within half a pixel of the geometric edge still receive
+     *  partial coverage; without this term width=1 has no pixel center inside
+     *  the shape at all. */
+    int64_t const cov_q16 = hw_q16 + 32768;
+
+    /* Bounding box: rounded-up half width + cap extension */
+    int32_t const half_w = (int32_t)((width + 1) >> 1);
 
     /* Bounding box: body box + cap extension */
     int32_t const cap_ext = is_round ? half_w + 1 : 0;
@@ -4349,11 +4359,9 @@ _gt_wu_line(_gt_draw_ctx_st * ctx,
             /* t64, d64 are in Q16 pixel units */
             int64_t const abs_d64 = (d64 < 0) ? -d64 : d64;
 
-            /* half_w in Q16 for sub-pixel AA */
-            int64_t const hw_q16 = (int64_t)half_w << 16;
-
-            /* Signed distance to shape boundary in Q16 pixels (positive = inside) */
-            int32_t sdf;
+            /* Signed distance to shape boundary in Q16 pixels (positive = inside).
+             * int64 keeps extreme widths (near UINT16_MAX) from overflowing. */
+            int64_t sdf;
 
             if (t64 >= 0 && t64 <= ((int64_t)len << 16)) {
                 /* Body: distance to side edge */
@@ -4363,7 +4371,7 @@ _gt_wu_line(_gt_draw_ctx_st * ctx,
                     uint16_t phase = (uint16_t)((uint32_t)t_px % (uint32_t)dash_cycle);
                     if (phase >= dash_w) continue;  /* in gap, skip pixel */
                 }
-                sdf = (int32_t)(hw_q16 - abs_d64);
+                sdf = cov_q16 - abs_d64;
             } else if (is_round) {
                 /* Round cap: Euclidean distance to nearest endpoint */
                 int64_t const t_cap64 = (t64 < 0) ? -t64 : (t64 - ((int64_t)len << 16));
@@ -4372,15 +4380,15 @@ _gt_wu_line(_gt_draw_ctx_st * ctx,
                 int32_t const d_q8 = (int32_t)(abs_d64 >> 8);
                 uint32_t const dist2_q8 = (uint32_t)(t_q8 * t_q8 + d_q8 * d_q8);
                 int32_t const dist_q16  = (int32_t)(_gt_isqrt(dist2_q8) << 8);
-                sdf = (int32_t)(hw_q16 - dist_q16);
+                sdf = cov_q16 - dist_q16;
             } else {
                 /* Square cap: AA on the end face only.
                  * The body already covers t in [0, len].
-                 * Here we handle the 1-pixel AA fringe just outside the endpoints. */
-                if (abs_d64 > hw_q16) continue;
+                 * Here we handle the half-pixel AA fringe just outside the endpoints. */
+                if (abs_d64 > cov_q16) continue;
                 int64_t const t_cap64 = (t64 < 0) ? -t64 : (t64 - ((int64_t)len << 16));
-                /* t_cap64 > 0 means outside endpoint; AA within 1 pixel */
-                sdf = 65536 - (int32_t)t_cap64;
+                /* t_cap64 > 0 means outside endpoint; AA within half a pixel */
+                sdf = 32768 - t_cap64;
             }
 
             if (sdf <= 0) continue;

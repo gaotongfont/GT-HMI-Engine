@@ -80,10 +80,27 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_table_class = {
 
 /* static functions -----------------------------------------------------*/
 
+/**
+ * @brief Draw one table grid segment.
+ *
+ * The caller describes the segment as an area: a vertical border has
+ * w == border_width and h > 0, a horizontal border has h == border_width and
+ * w > 0. End points must keep x or y equal, otherwise gt_draw_line() falls
+ * into the Wu anti-aliased diagonal path and a 1px vertical separator becomes
+ * almost invisible (M-2: missing column separators).
+ *
+ * @param obj Table object.
+ * @param area Segment geometry (x, y, w, h).
+ * @param color Line color.
+ * @param width Line width.
+ */
 static GT_ATTRIBUTE_RAM_TEXT void _draw_line(gt_obj_st * obj, gt_area_st * area, gt_color_t color, uint8_t width) {
     gt_area_st res = *area;
     if (gt_obj_get_inside(obj) &&
         false == gt_area_cover_screen(&obj->parent->area, area, &res)) {
+        return ;
+    }
+    if (res.w <= 0 || res.h <= 0) {
         return ;
     }
     gt_attr_line_st line = {
@@ -91,8 +108,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_line(gt_obj_st * obj, gt_area_st * area,
             .x = res.x,
             .y = res.y,
         }, .end = {
-            .x = res.x + res.w,
-            .y = res.y + res.h,
+            .x = res.x,
+            .y = res.y,
         }, .line = {
             .width = width,
             .color = color,
@@ -101,6 +118,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_line(gt_obj_st * obj, gt_area_st * area,
             .brush = GT_BRUSH_TYPE_ROUND,
         },
     };
+    if (res.w <= res.h) {
+        /** Vertical: keep x constant, endpoints are inclusive */
+        line.end.y = res.y + res.h - 1;
+    } else {
+        /** Horizontal: keep y constant */
+        line.end.x = res.x + res.w - 1;
+    }
     gt_draw_line(obj->draw_ctx, &line, &obj->area);
 }
 

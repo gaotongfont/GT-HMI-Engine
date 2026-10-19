@@ -37,6 +37,8 @@
 
 #define _MARK_DOWN_LOG              0
 
+#define _MARK_DOWN_CODE_PADDING     8   /**< code block inner padding */
+
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_markdown_s {
     gt_obj_st base;
@@ -264,6 +266,45 @@ _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
     return 0;
 }
 
+/**
+ * @brief Create a fenced/indented code block as a distinct textarea with a
+ *        light background, so code is no longer merged into (and dropped by)
+ *        the surrounding paragraph.
+ * @param pm Callback parameters, userdata is _gt_markdown_pack_st.
+ * @return 0 on success.
+ */
+static GT_ATTRIBUTE_RAM_TEXT int
+_enter_md_block_code(_gt_markdown_cb_params_st * pm) {
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    gt_obj_st * code = NULL;
+
+    ptr->prop.block = pm->type;
+    ptr->prop.item_count = 0;
+
+    code = gt_textarea_create(ptr->markdown_p);
+    ptr->act_p[ptr->act_idx] = code;
+    if (NULL == code) {
+        return 0;
+    }
+
+    gt_obj_set_pos(code, 0, ptr->offset.y + ptr->markdown_p->area.y);
+    gt_obj_set_size(code, ptr->markdown_p->area.w, 16);
+    gt_obj_show_bg(code, true);
+    gt_obj_set_bgcolor(code, gt_color_hex(0xF2F3F5));
+    gt_obj_set_radius(code, 4);
+    gt_obj_set_touch_parent(code, true);
+    gt_obj_set_fixed(code, true);
+
+    gt_textarea_set_border_width(code, 0);
+    gt_textarea_set_padding(code, _MARK_DOWN_CODE_PADDING);
+    gt_textarea_set_space(code, 0, 4);
+    gt_textarea_set_font_info(code, &style->font_info_small);
+    gt_textarea_set_font_color(code, style->font_color);
+
+    return 0;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_hr(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
@@ -275,6 +316,8 @@ _enter_md_block_hr(_gt_markdown_cb_params_st * pm) {
     gt_obj_set_pos(ptr->act_p[ptr->act_idx], padding, 0);
     gt_line_set_line_width(ptr->act_p[ptr->act_idx], 2);
     gt_line_set_hor_line(ptr->act_p[ptr->act_idx], ptr->markdown_p->area.w - (padding << 1));
+
+    return 0;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT int
@@ -410,6 +453,10 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
             ret = _enter_md_block_hr(&params);
             break;
         }
+        case MD_BLOCK_CODE: {  // fenced/indented code block
+            ret = _enter_md_block_code(&params);
+            break;
+        }
         case MD_BLOCK_TABLE: {  // value is null
             ret = _enter_md_block_table(&params);
             break;
@@ -466,6 +513,12 @@ _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
 #endif
     if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TEXTAREA)) {
         uint32_t height = gt_textarea_get_total_height(ptr->act_p[ptr->act_idx]);
+        if (MD_BLOCK_CODE == type) {
+            /** max_height only covers text; the code block also draws a
+             *  background frame, so reserve its inner padding on both sides,
+             *  otherwise the last code line overflows the frame. */
+            height += (_MARK_DOWN_CODE_PADDING << 1);
+        }
 #if _MARK_DOWN_LOG
         GT_LOG_A("", "   height: %d", height);
 #endif
@@ -544,6 +597,18 @@ _text_cb(MD_TEXTTYPE type, const MD_CHAR * text, MD_SIZE size, void * userdata) 
     snprintf(buf, size + 1, "%s", text);
     GT_LOG_A("", "  type: %d len: %d[%d] text: [%s]", type, size, sizeof(buf), buf);
 #endif
+    if (MD_TEXT_CODE == type) {
+        /** Code block text arrives line by line (indent chunk + line + '\n').
+         *  Append into a single textarea entry so leading spaces and line
+         *  breaks are preserved verbatim. */
+        gt_obj_st * obj = ptr->act_p[ptr->act_idx];
+        _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+        if (gt_obj_is_type(obj, GT_TYPE_TEXTAREA)) {
+            gt_textarea_append_str_by_len(obj, (char * )text, size,
+                    ptr->font_style, style->font_color);
+        }
+        return ret;
+    }
     if (GT_RES_OK!= _common_set_text(ptr, (const char * )text, size)) {
         return ret;
     }
