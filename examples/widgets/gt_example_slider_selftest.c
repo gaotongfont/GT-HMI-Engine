@@ -21,6 +21,8 @@
 #include "../../src/widgets/gt_label.h"
 #include "../../src/widgets/gt_obj.h"
 #include "../../src/core/gt_timer.h"
+#include "../../src/core/gt_obj_scroll.h"
+#include "../../src/core/gt_refr.h"
 #include <stdio.h>
 #include <stdint.h>
 
@@ -31,6 +33,7 @@
 
 /* static variables -----------------------------------------------------*/
 static gt_obj_st * _s[6] = {0};          /* sliders under test */
+static gt_obj_st * _touch_slider = NULL; /* touch_mode slider under test */
 static gt_obj_st * _result_lbl = NULL;
 static int _pass = 0, _total = 0;
 
@@ -93,6 +96,77 @@ static void _tc_check_tag_range(const char * name, gt_obj_st * slider,
     _tc_report(name, (x >= min_x && x <= max_x && y >= min_y && y <= max_y), buf);
 }
 
+static void _tc_check_pos(const char * name, gt_obj_st * slider, int exp, int tol)
+{
+    char buf[64];
+    int pos = (int)gt_slider_get_pos(slider);
+    snprintf(buf, sizeof(buf), "exp %d+-%d got %d", exp, tol, pos);
+    _tc_report(name, (pos >= exp - tol && pos <= exp + tol), buf);
+}
+
+/** @brief Simulate one touch scroll event and force a synchronous redraw */
+static void _touch_scroll(gt_obj_st * slider, gt_size_t dx, gt_size_t dy)
+{
+    gt_obj_scroll_to(slider, dx, dy, GT_ANIM_OFF);
+    gt_refr_timer();
+}
+
+/**
+ * @brief Touch mode maps finger travel 1:1 to the knob and ignores post-release throw
+ *
+ * 320x20 horizontal slider, range 0~100: knob travel = 320 - 20 = 300 px.
+ */
+static void _tc_touch_mode(void)
+{
+    const int start_pos = 50;
+    int i;
+
+    gt_slider_set_pos(_touch_slider, start_pos);
+    gt_refr_timer();
+
+    /* 30 px -> +10 value (was: integer-value snap made it +30) */
+    gt_event_send(_touch_slider, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+    for (i = 0; i < 30; ++i) {
+        _touch_scroll(_touch_slider, 1, 0);
+    }
+    _tc_check_pos("TC12 touch 30px == +10 value", _touch_slider, start_pos + 10, 1);
+
+    /* post-release throw scroll must not move the knob */
+    gt_event_send(_touch_slider, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+    for (i = 0; i < 50; ++i) {
+        _touch_scroll(_touch_slider, 1, 0);
+    }
+    _tc_check_pos("TC13 touch release ignores throw", _touch_slider, start_pos + 10, 1);
+
+    /* reverse 15 px -> -5 value; rests exactly where the finger stopped */
+    gt_event_send(_touch_slider, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+    for (i = 0; i < 15; ++i) {
+        _touch_scroll(_touch_slider, -1, 0);
+    }
+    _tc_check_pos("TC14 touch reverse 15px == -5 value", _touch_slider, start_pos + 5, 1);
+
+    /* clamp at the end, then immediate response on reverse (no hidden travel) */
+    for (i = 0; i < 8; ++i) {
+        _touch_scroll(_touch_slider, 50, 0);
+    }
+    _tc_check_pos("TC15 touch clamp at end", _touch_slider, 100, 0);
+    for (i = 0; i < 3; ++i) {
+        _touch_scroll(_touch_slider, -10, 0);
+    }
+    _tc_check_pos("TC16 touch reverse after clamp", _touch_slider, 90, 1);
+    gt_event_send(_touch_slider, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+
+    /* changing start/end must resync the pixel accumulator (knob travel is
+     * now 300 px for 200 value units: 30 px == 20 value units) */
+    gt_slider_set_start_end(_touch_slider, 0, 200);
+    gt_event_send(_touch_slider, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+    for (i = 0; i < 30; ++i) {
+        _touch_scroll(_touch_slider, -1, 0);
+    }
+    _tc_check_pos("TC17 touch range change resync", _touch_slider, 70, 1);
+    gt_event_send(_touch_slider, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+}
+
 static void _summary(void)
 {
     char rtxt[48];
@@ -147,6 +221,8 @@ static void _selftest_timer_cb(_gt_timer_st * timer)
     _tc_check_tag("TC6 s3 dir-flip same geometry",        _s[2], 578, 48);
     _tc_check_tag_range("TC8 s4 hor-geom+ver-dir clamp",  _s[3], 416, 744, 136, 164);
     _tc_check_tag("TC11 s6 set_size only recompute",      _s[5], 318, 308);
+
+    _tc_touch_mode();
 
     _summary();
     /* repeat_count == 2 auto-removes the timer after this run */
@@ -214,6 +290,18 @@ gt_obj_st * gt_examples_slider_selftest(void)
     gt_obj_set_size(_s[5], 320, 20);
     gt_slider_set_tag_raw_data(_s[5], &_tag_raw_dsc);
     gt_slider_set_pos(_s[5], 50);
+
+    /* touch-mode slider: 320x20, knob travel 300 px */
+    gt_obj_st * touch_lbl = gt_label_create(screen);
+    gt_obj_set_pos(touch_lbl, 20, 352);
+    gt_obj_set_size(touch_lbl, 320, 20);
+    gt_label_set_text(touch_lbl, "touch_mode (swipe 30px => +10)");
+    _touch_slider = gt_slider_create(screen);
+    gt_obj_set_pos(_touch_slider, 20, 380);
+    gt_obj_set_size(_touch_slider, 320, 20);
+    gt_slider_set_start_end(_touch_slider, 0, 100);
+    gt_slider_set_pos(_touch_slider, 50);
+    gt_slider_set_touch_mode(_touch_slider, true);
 
     _gt_timer_st * tm = _gt_timer_create(_selftest_timer_cb, 150, NULL);
     _gt_timer_set_repeat_count(tm, 2);
