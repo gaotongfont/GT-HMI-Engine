@@ -124,8 +124,11 @@ static inline bool _is_keypad_visible(_gt_input_st * style) {
 
 static inline bool _is_keypad_auto_hide(_gt_input_st * style) {
     return style->hooking_kp &&
-        false == gt_obj_get_visible(style->hooking_kp) &&
-        gt_keypad_get_auto_hide(style->hooking_kp);
+        false == gt_obj_get_visible(style->hooking_kp)
+#if GT_CFG_ENABLE_KEYPAD
+        && gt_keypad_get_auto_hide(style->hooking_kp)
+#endif
+        ;
 }
 
 static inline void _gt_input_init_widget(gt_obj_st * input) {

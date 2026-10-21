@@ -67,12 +67,16 @@ typedef struct _gt_slider_s {
     gt_size_t bar_radius;
     gt_bar_dir_et dir;
 
+    int32_t touch_offset;       /** Continuous pixel offset accumulated while swiping (touch_mode only) */
+    uint16_t touch_max_offset;  /** max_offset that touch_offset corresponds to (for geometry-change resync) */
+
     uint8_t mode        : 2;    /** @ref gt_slider_mode_et */
     uint8_t tag_visible : 1;
     uint8_t repeat_mode : 1;
     uint8_t touch_mode  : 1;    /** 0: default , 1 : pos can only be changed by swiping */
     uint8_t tag_inside  : 1;    /** 1: tag circle fits inside the track; 0[default]: tag protrudes */
-    uint8_t reserved : 2;
+    uint8_t touch_dragging : 1; /** 1: a swipe gesture is in progress (touch_mode only) */
+    uint8_t reserved : 1;
 }_gt_slider_st;
 
 
@@ -240,38 +244,6 @@ _calc_touch_point_pos(gt_obj_st * obj) {
         return style->offset;
     }
 
-    if (style->touch_mode) {
-        gt_point_st dist_scroll = {0};
-        dist_scroll.x = obj->process_attr.scroll.x - _gt_obj_get_scroll_prev_x(obj);
-        dist_scroll.y = obj->process_attr.scroll.y - _gt_obj_get_scroll_prev_y(obj);
-
-        if (obj->process_attr.scroll.x != _gt_obj_get_scroll_prev_x(obj) ||
-            obj->process_attr.scroll.y != _gt_obj_get_scroll_prev_y(obj)) {
-            _gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, obj->process_attr.scroll.y);
-        }
-
-        gt_bar_dir_et dir = gt_slider_get_dir(obj);
-        switch(dir) {
-            case GT_BAR_DIR_HOR_L2R:
-                temp_offset = style->offset + dist_scroll.x;
-                break;
-            case GT_BAR_DIR_HOR_R2L:
-                temp_offset = style->offset - dist_scroll.x;
-                break;
-            case GT_BAR_DIR_VER_U2D:
-                temp_offset = style->offset + dist_scroll.y;
-                break;
-            case GT_BAR_DIR_VER_D2U:
-                temp_offset = style->offset - dist_scroll.y;
-                break;
-            default:
-                break;
-        }
-
-        temp_offset += _gt_slider_get_offset_tag_size(obj) >> 1;
-        return temp_offset;
-    }
-
     point_click.x += scr->area.x;
     point_click.y += scr->area.y;
     if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
@@ -329,6 +301,16 @@ _calc_pixel_offset_by_value(gt_obj_st * slider, gt_size_t value) {
     return (value - style->start) * max / (style->end - style->start);
 }
 
+/** @brief Keep the touch-mode pixel accumulator consistent with value/geometry */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_slider_sync_touch_state(gt_obj_st * slider)
+{
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+
+    style->touch_offset = style->offset;
+    style->touch_max_offset = _gt_slider_get_max_offset(slider);
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void
 _gt_slider_set_offset_by_pos(gt_obj_st * slider, gt_size_t pos)
 {
@@ -339,6 +321,117 @@ _gt_slider_set_offset_by_pos(gt_obj_st * slider, gt_size_t pos)
     style->pos = _limit_repeat_range_pos(style, style->pos);
 
     style->offset = _calc_pixel_offset_by_value(slider, style->pos);
+
+    _gt_slider_sync_touch_state(slider);
+}
+
+/**
+ * @brief Limit touch-mode value by the optional pos range (pos_min/pos_max)
+ *
+ * @return true: value was clamped
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool
+_limit_touch_pos_by_pos_range(_gt_slider_st * style, gt_size_t * pos_p)
+{
+    gt_size_t pos = *pos_p;
+
+    if (style->pos_min == style->pos_max) {
+        return false;
+    }
+    if (pos < style->pos_min) {
+        pos = style->pos_min;
+    } else if (pos > style->pos_max) {
+        pos = style->pos_max;
+    }
+    if (pos == *pos_p) {
+        return false;
+    }
+    *pos_p = pos;
+    return true;
+}
+
+/**
+ * @brief Begin a touch-mode swipe; resynchronise the pixel accumulator
+ *
+ * The engine keeps accumulating process_attr.scroll across gestures, so the
+ * previous value must be dropped here. Otherwise the first delta of the new
+ * gesture would contain scroll residue from the previous one.
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_slider_touch_begin(gt_obj_st * obj)
+{
+    _gt_slider_st * style = (_gt_slider_st * )obj;
+
+    if (style->touch_max_offset != _gt_slider_get_max_offset(obj)) {
+        /** geometry changed since the accumulator was synced */
+        _gt_slider_set_offset_by_pos(obj, style->pos);
+    } else {
+        style->touch_offset = style->offset;
+    }
+    style->touch_dragging = 1;
+
+    _gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, obj->process_attr.scroll.y);
+}
+
+/**
+ * @brief Apply a swipe delta (screen pixels) to a touch-mode slider
+ *
+ * The accumulated distance is kept in pixel units and only clamped to the
+ * knob travel range, so sub-value travel is not lost between events and the
+ * knob follows the finger 1:1 instead of snapping to integer values.
+ *
+ * @param slider slider obj
+ * @param delta  distance along the slider axis; positive moves towards the end
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_slider_apply_touch_delta(gt_obj_st * slider, gt_size_t delta)
+{
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    uint16_t max_offset = _gt_slider_get_max_offset(slider);
+    int32_t total = 0;
+    gt_size_t raw_pos = 0;
+    gt_size_t pos = 0;
+    bool clamped = false;
+
+    if (0 == max_offset || style->end <= style->start) {
+        /** degenerate range or track fully consumed by the tag */
+        style->touch_offset = 0;
+        style->offset = 0;
+        style->pos = style->start;
+        return ;
+    }
+
+    total = style->touch_offset + delta;
+    if (total < 0) {
+        total = 0;
+    } else if (total > (int32_t)max_offset) {
+        total = max_offset;
+    }
+    style->touch_offset = total;
+
+    raw_pos = (gt_size_t)(total * (style->end - style->start) / max_offset) + style->start;
+    pos = _limit_total_range_pos(style, raw_pos);
+    pos = _limit_repeat_range_pos(style, pos);
+    clamped = (pos != raw_pos);
+    if (_limit_touch_pos_by_pos_range(style, &pos)) {
+        clamped = true;
+    }
+
+    if (clamped) {
+        /** AB repeat / pos range boundary: drop the travel beyond the limit */
+        style->touch_offset = _calc_pixel_offset_by_value(slider, pos);
+        total = style->touch_offset;
+    }
+
+    if (GT_SLIDER_MODE_STEP == style->mode && style->step > 0) {
+        pos = pos / style->step * style->step;
+        /** keep the knob on the step grid; touch_offset keeps the remainder */
+        style->offset = _calc_pixel_offset_by_value(slider, pos);
+    } else {
+        style->offset = (uint16_t)total;
+    }
+
+    style->pos = pos;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void
@@ -594,21 +687,32 @@ _init_cb(gt_obj_st * obj) {
     };
 
     // Set the position range of the slider
+    bool pos_range_clamped = false;
     if(style->pos_min != style->pos_max) {
 
         if(style->pos < style->pos_min){
             style->pos = style->pos_min;
+            pos_range_clamped = true;
         }
         else if(style->pos > style->pos_max){
             style->pos = style->pos_max;
+            pos_range_clamped = true;
         }
     }
 
     /* offset is derived from pos and the CURRENT geometry; geometry may have
      * changed since the last layout (gt_obj_set_size / set_tag_size / parent
      * layout move do not notify the widget), so recompute on every draw to
-     * keep the knob/fill consistent with the current track length. */
-    _gt_slider_set_offset_by_pos(obj , style->pos);
+     * keep the knob/fill consistent with the current track length.
+     * In touch mode the offset is a continuous pixel accumulator: re-deriving
+     * it from the integer pos on every frame would discard the sub-value
+     * remainder and make the knob move erratically (too far / not at all).
+     * Only resync when geometry changed or pos was clamped externally. */
+    if (false == style->touch_mode ||
+        pos_range_clamped ||
+        style->touch_max_offset != _gt_slider_get_max_offset(obj)) {
+        _gt_slider_set_offset_by_pos(obj , style->pos);
+    }
 
     gt_area_st area_base = {0}, area_val = {0}, tag_area = {0};
     gt_attr_rect_st rect_attr;
@@ -757,6 +861,33 @@ _deinit_cb(gt_obj_st * obj) {
 }
 
 /**
+ * @brief Convert the engine scroll delta of the current event into slider-axis pixels
+ *
+ * Updates the scroll baseline as a side effect, so each call consumes the
+ * delta exactly once.
+ *
+ * @param obj slider obj
+ * @return gt_size_t pixel delta along the slider direction; positive increases offset
+ */
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t
+_gt_slider_calc_touch_delta(gt_obj_st * obj)
+{
+    _gt_slider_st * style = (_gt_slider_st * )obj;
+    gt_size_t dx = (gt_size_t)(obj->process_attr.scroll.x - _gt_obj_get_scroll_prev_x(obj));
+    gt_size_t dy = (gt_size_t)(obj->process_attr.scroll.y - _gt_obj_get_scroll_prev_y(obj));
+
+    _gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, obj->process_attr.scroll.y);
+
+    switch (style->dir) {
+        case GT_BAR_DIR_HOR_L2R: return dx;
+        case GT_BAR_DIR_HOR_R2L: return -dx;
+        case GT_BAR_DIR_VER_U2D: return dy;
+        case GT_BAR_DIR_VER_D2U: return -dy;
+        default: return 0;
+    }
+}
+
+/**
  * @brief obj event handler call back
  *
  * @param obj
@@ -773,15 +904,43 @@ _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
+        case GT_EVENT_TYPE_INPUT_SCROLL_START:
+            if (style->touch_mode) {
+                _gt_slider_touch_begin(obj);
+            }
+            break;
+
+        case GT_EVENT_TYPE_INPUT_SCROLL_END:
+            if (style->touch_mode) {
+                style->touch_dragging = 0;
+            }
+            break;
+
+        case GT_EVENT_TYPE_INPUT_PRESS_LOST:
+            style->touch_dragging = 0;
+            break;
+
         case GT_EVENT_TYPE_INPUT_RELEASED:
             if(style->touch_mode){
+                /** end of swipe: release point must not move the knob */
+                style->touch_dragging = 0;
                 break;
             }
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
+            if (style->touch_mode) {
+                if (false == style->touch_dragging) {
+                    /** throw/inertia scroll after release: follow the finger only */
+                    break;
+                }
+                _gt_slider_apply_touch_delta(obj, _gt_slider_calc_touch_delta(obj));
+            } else {
+                _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
+            }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            int pos = gt_slider_get_pos(obj);
-            gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, (void *)pos);
+            {
+                int pos = gt_slider_get_pos(obj);
+                gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, (void *)(intptr_t)pos);
+            }
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL_UP:
@@ -888,6 +1047,10 @@ void gt_slider_set_start_end(gt_obj_st * slider, gt_size_t start, gt_size_t end)
     _gt_slider_st * style = (_gt_slider_st *)slider;
     style->start = start;
     style->end = end;
+    /** the value-to-pixel mapping depends on (end - start); in touch mode the
+     *  offset is not re-derived on every draw, so resync it here to prevent the
+     *  knob and the value from falling out of step after a range change */
+    _gt_slider_set_offset_by_pos(slider, style->pos);
 }
 
 gt_size_t gt_slider_get_pos(gt_obj_st * slider)
@@ -1210,6 +1373,13 @@ void gt_slider_set_touch_mode(gt_obj_st* slider, bool touch_mode)
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
     style->touch_mode = touch_mode;
+    style->touch_dragging = 0;
+    if (touch_mode) {
+        _gt_slider_sync_touch_state(slider);
+    } else {
+        /** back to absolute mode: re-derive the pixel offset from the value */
+        _gt_slider_set_offset_by_pos(slider, style->pos);
+    }
 }
 
 void gt_slider_set_pos_range(gt_obj_st * slider, gt_size_t min, gt_size_t max)
