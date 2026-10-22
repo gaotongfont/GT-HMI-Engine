@@ -15,7 +15,8 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "gt_conf_widgets.h"
-#if GT_CFG_ENABLE_FORMULA
+#include "../font/gt_font.h"
+#if GT_CFG_ENABLE_FORMULA && GT_LATEX_ENABLE
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"

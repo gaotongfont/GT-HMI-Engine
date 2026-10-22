@@ -9,7 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_formula.h"
-#if GT_CFG_ENABLE_FORMULA
+#if GT_CFG_ENABLE_FORMULA && GT_LATEX_ENABLE
 #include "../core/gt_mem.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"

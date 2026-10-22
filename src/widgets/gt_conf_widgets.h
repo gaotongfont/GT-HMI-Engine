@@ -102,7 +102,7 @@ extern "C" {
 #define GT_CFG_ENABLE_INDEV_EFFECTS     1
 #endif
 
-#if GT_USE_LATEX_LIB && GT_LATEX_ENABLE
+#if GT_USE_LATEX_LIB && GT_CFG_ENABLE_ZK_FONT
 #define GT_CFG_ENABLE_FORMULA           1
 #endif
 
