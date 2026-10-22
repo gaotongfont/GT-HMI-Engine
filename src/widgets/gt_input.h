@@ -172,6 +172,17 @@ void gt_input_set_border_width(gt_obj_st * input, gt_size_t width);
 void gt_input_set_border_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y);
 
+/**
+ * @brief Bind the input obj to a keypad
+ *
+ * Several input objs may share the same keypad; each input obj records the
+ * keypad bound to it. When the input obj gets focus, its bound keypad is
+ * displayed, the other keypads of the active screen and of the top layer are
+ * hidden, and the keypad target is switched to this input obj.
+ *
+ * @param input  input obj
+ * @param keypad keypad obj to bind
+ */
 void gt_input_hooking_keypad(gt_obj_st * input, gt_obj_st * keypad);
 
 /**

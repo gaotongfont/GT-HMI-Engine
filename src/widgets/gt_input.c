@@ -39,8 +39,6 @@ typedef struct _gt_input_s {
 
     uint32_t max_char;        /** max char can input */
 
-    uint16_t pos_selected_start;
-    uint16_t pos_selected_end;
     uint16_t pos_cursor;
 
     gt_point_st point_pos;
@@ -120,15 +118,6 @@ static inline bool _is_keypad_visible(_gt_input_st * style) {
         (gt_obj_st *)style == gt_keypad_get_target(style->hooking_kp) &&
 #endif
         gt_obj_get_visible(style->hooking_kp);
-}
-
-static inline bool _is_keypad_auto_hide(_gt_input_st * style) {
-    return style->hooking_kp &&
-        false == gt_obj_get_visible(style->hooking_kp)
-#if GT_CFG_ENABLE_KEYPAD
-        && gt_keypad_get_auto_hide(style->hooking_kp)
-#endif
-        ;
 }
 
 static inline void _gt_input_init_widget(gt_obj_st * input) {
@@ -340,37 +329,110 @@ static void _deinit_cb(gt_obj_st * obj) {
     _roll_anim_free_auto_ctrl(&style_p->placeholder_scroll);
 }
 
+#if GT_CFG_ENABLE_KEYPAD
+/**
+ * @brief Hide all the keypads in the obj tree except @p keep, and make sure
+ *        @p keep is visible
+ *
+ * @param obj  root obj of the tree to traverse
+ * @param keep the keypad that should stay visible
+ */
+static void _input_hide_other_keypads(gt_obj_st * obj, gt_obj_st * keep) {
+    uint16_t cnt = gt_obj_get_child_cnt(obj);
+    uint16_t i = 0;
+
+    for (i = 0; i < cnt; i++) {
+        gt_obj_st * child = gt_obj_get_child_at(obj, i);
+        if (NULL == child) {
+            continue;
+        }
+        if (true == gt_obj_is_type(child, GT_TYPE_KEYPAD)) {
+            if (child == keep) {
+                gt_obj_set_visible(child, true);
+                continue;
+            }
+            if (true == gt_obj_get_visible(child)) {
+                /** the hidden keypad's target input must redraw: the cursor and
+                 *  the placeholder visibility depend on the keypad visibility */
+                gt_obj_st * target = gt_keypad_get_target(child);
+                gt_obj_set_visible(child, false);
+                if (NULL != target) {
+                    gt_disp_invalid_area(target);
+                }
+            }
+            continue;
+        }
+        _input_hide_other_keypads(child, keep);
+    }
+}
+
+/**
+ * @brief Activate the keypad bound to the input: show it, hide the other
+ *        keypads and switch the keypad's target to the input
+ *
+ * @param input input obj
+ * @param kp    keypad bound to the input
+ */
+static void _input_activate_keypad(gt_obj_st * input, gt_obj_st * kp) {
+    gt_obj_st * last_target = NULL;
+    gt_obj_st * scr = NULL;
+
+    if (false == gt_obj_is_type(kp, GT_TYPE_KEYPAD)) {
+        return;
+    }
+
+    /** hide the keypads of the active screen and of the top layer */
+    scr = gt_disp_get_scr();
+    if (NULL != scr) {
+        _input_hide_other_keypads(scr, kp);
+    }
+#if GT_USE_LAYER_TOP
+    {
+        gt_obj_st * layer_top = gt_disp_get_layer_top();
+        if (NULL != layer_top) {
+            _input_hide_other_keypads(layer_top, kp);
+        }
+    }
+#endif
+    /** the bound keypad may live outside the input's obj tree */
+    gt_obj_set_visible(kp, true);
+
+    last_target = gt_keypad_get_target(kp);
+    if (NULL != last_target && input != last_target) {
+        gt_disp_invalid_area(last_target);
+    }
+    gt_disp_invalid_area(input);
+    gt_keypad_set_target(kp, input);
+}
+#endif
+
 static void _input_check_keypad_switch_focus(gt_obj_st * input) {
+#if GT_CFG_ENABLE_KEYPAD
     _gt_input_st * style = (_gt_input_st * )input;
-    uint16_t kp_count = gt_obj_search_childs_count_by_type(input->parent, GT_TYPE_KEYPAD);
+    gt_obj_st * kp = NULL;
+    uint16_t kp_count = 0;
+
+    if (NULL != style->hooking_kp) {
+        /** the input has bound keypad: display it and switch keypad target */
+        _input_activate_keypad(input, style->hooking_kp);
+        return;
+    }
+
+    kp_count = gt_obj_search_childs_count_by_type(input->parent, GT_TYPE_KEYPAD);
     if (0 == kp_count) {
         return;
     } else if (kp_count > 1) {
-        /** display owner keypad */
-#if GT_CFG_ENABLE_KEYPAD
-        if (_is_keypad_auto_hide(style)) {
-            gt_obj_set_visible(style->hooking_kp, true);
-            gt_disp_invalid_area(input);
-        }
-#endif
+        /** multiple keypads but no keypad is bound to this input: can not decide */
         return;
     }
     /** 1 == kp_count, common using one keypad, maybe want to switch input object */
-    gt_obj_st * kp = gt_obj_search_child_by_type(input->parent, GT_TYPE_KEYPAD);
+    kp = gt_obj_search_child_by_type(input->parent, GT_TYPE_KEYPAD);
     if (NULL == kp) {
         return;
     }
-    if (false == gt_obj_get_visible(kp)) {
-        gt_obj_set_visible(kp, true);
-    }
-#if GT_CFG_ENABLE_KEYPAD
-    if (input != gt_keypad_get_target(kp)) {
-        gt_disp_invalid_area(gt_keypad_get_target(kp));
-    }
-#endif
-    gt_disp_invalid_area(input);
-#if GT_CFG_ENABLE_KEYPAD
-    gt_keypad_set_target(kp, input);
+    _input_activate_keypad(input, kp);
+#else
+    (void)input;
 #endif
 }
 

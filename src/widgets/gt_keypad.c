@@ -65,7 +65,6 @@ typedef struct _gt_keypad_s {
     gt_keypad_enter_cb_t enter_cb;
 
     gt_color_t border_color;
-    gt_color_t color_ctrl;
 
     gt_size_t border_width;
     gt_keypad_type_te type;
@@ -991,7 +990,8 @@ void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color)
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
-    style->color_ctrl = color;
+    /** keep the legacy API working: ctrl key color is stored in the btnmap */
+    gt_btnmap_set_special_btn_color_background(style->btnmap, color);
 }
 
 void gt_keypad_set_key_color_background(gt_obj_st * keypad, gt_color_t color)

@@ -116,10 +116,17 @@ void gt_keypad_hide(gt_obj_st * keypad);
 void gt_keypad_set_map_list(gt_obj_st * keypad, gt_keypad_map_st* map_list, uint8_t map_num);
 
 /**
- * @brief
+ * @brief Bind the keypad to an input obj and make it the current target
  *
- * @param keypad
- * @param tar_input need to set the target input box
+ * Call it for each input obj while setting up the UI, e.g. bind keypad1 to
+ * both input1 and input2. The keypad keeps only one active target, so the
+ * last call decides which input obj receives the keypad input before the
+ * first tap. At runtime the target is switched automatically when the user
+ * taps an input obj: only the keypad bound to that input obj is displayed,
+ * the other keypads of the active screen and of the top layer are hidden.
+ *
+ * @param keypad    keypad obj
+ * @param tar_input the input obj which the keypad writes into
  */
 void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * tar_input);
 gt_obj_st * gt_keypad_get_target(gt_obj_st * keypad);
