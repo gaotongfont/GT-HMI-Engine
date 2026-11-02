@@ -245,16 +245,40 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_set_msg_font_info_all(_gt_chat_st * style,
     }
 }
 
+/**
+ * @brief Width available to the text measurement after reserving the bubble's
+ *        outer allowance (glyph safety margin + both borders).
+ *
+ * The measured text is widened by the same allowance below, so it must be
+ * reserved here; otherwise the bubble becomes wider than the chat's inner
+ * width and its border is clipped by the parent area.
+ *
+ * @param chat_w Chat width in pixels.
+ * @param border_w Message border width in pixels.
+ * @return Measurement width in pixels; at least 1 even on a tiny chat.
+ */
+static uint16_t _gt_chat_msg_measure_max_w(uint16_t chat_w, uint8_t border_w)
+{
+    uint32_t max_w = chat_w > (chat_w >> 2) + _MSG_SPACE_X
+                   ? (uint32_t)(chat_w - (chat_w >> 2) - _MSG_SPACE_X)
+                   : 0u;
+    uint32_t reserve_w = 10u + ((uint32_t)border_w << 1);
+    return max_w > reserve_w ? (uint16_t)(max_w - reserve_w) : 1u;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, uint8_t idx, bool is_send) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
     uint32_t w = 0, h = 0;
     gt_size_t x, y;
     gt_radius_t radius = style->msg_radius;
+    uint8_t border_w = is_send ? style->send_border_w : style->recv_border_w;
+    uint8_t border_w2 = border_w << 1;
+    uint16_t measure_max_w = _gt_chat_msg_measure_max_w(chat->area.w, border_w);
 
     gt_font_split_line_st sp_line = {
         .text = NULL,
-        .max_w = _MSG_MAX_W(chat->area.w) - w,
-        .start_w =  _MSG_MAX_W(chat->area.w) - w,
+        .max_w = measure_max_w,
+        .start_w =  measure_max_w,
         .space = style->space_x,
         .indent = _MULTI_LINE_CONTENT_INDENT_DEFAULT,
     };
@@ -264,14 +288,20 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     h = s_line_ret.line_numb;
     w = s_line_ret.max_w;
 
-    uint8_t border_w = is_send ? style->send_border_w : style->recv_border_w;
-    uint8_t border_w2 = border_w << 1;
     uint16_t font_size = style->font_info.size;
     uint8_t space_y = style->space_y;
 
     /* Keep a real right/left safety margin. Without it the last Latin glyph
      * (for example the 'y' in "bye") can be clipped by one pixel. */
     w += 10 + border_w2;
+    /* Very narrow chats (or a glyph wider than the measurement budget) can
+     * still overflow; clamp so the bubble never leaves the inner width. */
+    if (chat->area.w > (_MSG_SPACE_X << 1)) {
+        uint16_t inner_w = (uint16_t)(chat->area.w - (_MSG_SPACE_X << 1));
+        if (w > inner_w) {
+            w = inner_w;
+        }
+    }
     if (s_line_ret.line_numb > 1) {
         style->item_cb.set_font_align_cb(msg_p->msg_obj, GT_ALIGN_LEFT_MID);
         style->item_cb.set_indent_cb(msg_p->msg_obj, _MULTI_LINE_CONTENT_INDENT_DEFAULT);
@@ -286,8 +316,10 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
         style->item_cb.set_space_cb(msg_p->msg_obj, style->space_x, 0);
         h = (h + 1) * font_size + border_w2;
         if(style->item_cb.set_start_point_offset_cb) {
+            /** w can be clamped below the measured width on a tiny chat. */
+            uint16_t extra_w = (w > s_line_ret.max_w) ? (uint16_t)(w - s_line_ret.max_w) : 0;
             style->item_cb.set_start_point_offset_cb(msg_p->msg_obj,
-                                                    (gt_font_get_indent_width(&style->font_info, _MULTI_LINE_CONTENT_INDENT_DEFAULT) + (w - s_line_ret.max_w)) >> 1 ,
+                                                    (gt_font_get_indent_width(&style->font_info, _MULTI_LINE_CONTENT_INDENT_DEFAULT) + extra_w) >> 1 ,
                                                     0);
         }
     }
@@ -384,7 +416,10 @@ static void _gt_chat_update_tips_area(_gt_chat_st * style, uint8_t index)
     gt_obj_set_size(msg_p->tips_obj, max_w, style->font_info.size + 4);
     gt_split_line_ret_st line = gt_btn_get_font_split_line_numb(msg_p->tips_obj, &split);
     uint16_t tips_w = (uint16_t)((line.line_numb > 1 ? max_w : line.max_w) + 8);
-    if (tips_w > style->base.area.w) tips_w = style->base.area.w;
+    /* Cap at the inner width, not the full chat width: Tips keep the same
+     * message-edge margin as bubbles, so a full-width cap would push them
+     * into the chat border. */
+    if (tips_w > max_w) tips_w = max_w;
     uint16_t tips_h = (uint16_t)((line.line_numb ? line.line_numb : 1) * style->font_info.size + 4);
     gt_size_t tips_x = msg_p->is_send
                      ? msg_p->msg_obj->area.x + msg_p->msg_obj->area.w - tips_w
