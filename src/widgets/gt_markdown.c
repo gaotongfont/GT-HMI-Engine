@@ -52,15 +52,19 @@ typedef struct _gt_markdown_s {
     uint8_t border_width;
 }_gt_markdown_st;
 
+#define _MARK_DOWN_MAX_LIST_DEPTH  (8)   /**< max nested list depth (UL/OL) */
+#define _MARK_DOWN_LIST_INDENT     (2)   /**< leading spaces per nesting level */
+
 /**
- * @brief Remark previous item prop
+ * @brief Active list context. One instance per nesting level: saved on
+ *      list enter, restored on list leave (fix M-7 nested list state
+ *      pollution: parent counter/type must survive a nested child list).
  */
 typedef struct {
-    MD_BLOCKTYPE block;
-    MD_SPANTYPE span;
-    MD_TEXTTYPE text;
-    uint16_t item_count;    /** 'li' also item index */
-}_gt_markdown_type_st;
+    MD_BLOCKTYPE block;      /**< MD_BLOCK_UL / MD_BLOCK_OL of the current list */
+    uint16_t item_count;     /**< 'li' item index within the current list */
+    uint16_t ol_start;       /**< ordered list start number, 1 by default */
+}_gt_markdown_list_st;
 
 /**
  * @brief The pack struct of pass parameters each level
@@ -74,7 +78,9 @@ typedef struct {
     gt_align_et font_align;
     uint8_t is_table_header;
 
-    _gt_markdown_type_st prop;
+    _gt_markdown_list_st list;                                      /**< current inner-most list context */
+    _gt_markdown_list_st list_stack[_MARK_DOWN_MAX_LIST_DEPTH];     /**< saved parent list contexts */
+    uint8_t list_depth;                                             /**< current list nesting depth */
 }_gt_markdown_pack_st;
 
 typedef struct {
@@ -181,8 +187,8 @@ _enter_md_block_default(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
     _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
 
-    ptr->prop.block = pm->type;
-    ptr->prop.item_count = 0;
+    /* Non-list blocks must not touch the list context: a paragraph nested
+     * inside a loose list item would otherwise reset the parent counter. */
 
     ptr->act_p[ptr->act_idx] = gt_textarea_create(ptr->markdown_p);
     gt_obj_set_pos(ptr->act_p[ptr->act_idx], 0, ptr->offset.y + ptr->markdown_p->area.y);
@@ -227,6 +233,26 @@ _enter_md_block_h(_gt_markdown_cb_params_st * pm) {
     return 0;
 }
 
+/**
+ * @brief Enter a list block (UL/OL): save the parent list context on the
+ *      stack and start a fresh one, so nested lists cannot pollute the
+ *      parent's item counter and type (fix M-7).
+ */
+static GT_ATTRIBUTE_RAM_TEXT int
+_enter_md_block_list(_gt_markdown_cb_params_st * pm, uint16_t ol_start) {
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
+
+    if (ptr->list_depth < _MARK_DOWN_MAX_LIST_DEPTH) {
+        ptr->list_stack[ptr->list_depth++] = ptr->list;
+    }
+
+    ptr->list.block = pm->type;
+    ptr->list.item_count = 0;
+    ptr->list.ol_start = ol_start > 0 ? ol_start : 1;
+
+    return _enter_md_block_default(pm);
+}
+
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
@@ -235,7 +261,7 @@ _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
     char buf[256] = {0};
     gt_size_t len = 0;
 
-    ++ptr->prop.item_count;
+    ++ptr->list.item_count;
     ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
 
     if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TEXTAREA) && gt_textarea_get_str_count(ptr->act_p[ptr->act_idx])) {
@@ -243,20 +269,33 @@ _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
     }
 
 #if _MARK_DOWN_LOG
-    GT_LOG_A("", "enter block %d li %p act: %p <<<<", ptr->prop.block, ptr->markdown_p, ptr->act_p[ptr->act_idx]);
+    GT_LOG_A("", "enter block %d li %p act: %p <<<<", ptr->list.block, ptr->markdown_p, ptr->act_p[ptr->act_idx]);
 #endif
 
-    switch (ptr->prop.block) {
-        case MD_BLOCK_UL: {
-            snprintf(buf, sizeof(buf), " %d. ", ptr->prop.item_count);
-            break;
+    /* Indent nested list markers by nesting level (incidental finding in the
+     * M-7 report: child items used to render flush with the parent items).
+     * list_depth is 1 for a top-level list, so the first level adds no gap. */
+    {
+        char ind[(_MARK_DOWN_MAX_LIST_DEPTH - 1) * _MARK_DOWN_LIST_INDENT + 1] = {0};
+        uint8_t lvl = ptr->list_depth > 0 ? (uint8_t)(ptr->list_depth - 1) : 0;
+        if (lvl > _MARK_DOWN_MAX_LIST_DEPTH - 1) { lvl = _MARK_DOWN_MAX_LIST_DEPTH - 1; }
+        memset(ind, ' ', (size_t)lvl * _MARK_DOWN_LIST_INDENT);
+
+        switch (ptr->list.block) {
+            case MD_BLOCK_UL: {
+                /* Unordered list: bullet marker */
+                snprintf(buf, sizeof(buf), " %s· ", ind);
+                break;
+            }
+            case MD_BLOCK_OL: {
+                /* Ordered list: running number, honouring the list's start */
+                snprintf(buf, sizeof(buf), " %s%d. ", ind,
+                         ptr->list.ol_start + ptr->list.item_count - 1);
+                break;
+            }
+            default:
+                return 0;
         }
-        case MD_BLOCK_OL: {
-            snprintf(buf, sizeof(buf), " · ");
-            break;
-        }
-        default:
-            return 0;
     }
 
     len = strlen(buf);
@@ -278,9 +317,6 @@ _enter_md_block_code(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
     _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
     gt_obj_st * code = NULL;
-
-    ptr->prop.block = pm->type;
-    ptr->prop.item_count = 0;
 
     code = gt_textarea_create(ptr->markdown_p);
     ptr->act_p[ptr->act_idx] = code;
@@ -329,9 +365,6 @@ _enter_md_block_table(_gt_markdown_cb_params_st * pm) {
 #if _MARK_DOWN_LOG
     GT_LOG_A("", ">>> table col: %d header row: %d, body row: %d", det->col_count, det->head_row_count, det->body_row_count);
 #endif
-    ptr->prop.block = pm->type;
-    ptr->prop.item_count = 0;
-
     ptr->act_p[ptr->act_idx] = gt_table_create(ptr->markdown_p);
     gt_obj_set_pos(ptr->act_p[ptr->act_idx], ptr->markdown_p->area.x, ptr->offset.y + ptr->markdown_p->area.y);
     gt_obj_set_touch_parent(ptr->act_p[ptr->act_idx], true);
@@ -438,11 +471,12 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
             break;
         }
         case MD_BLOCK_UL: { // 2
-            ret = _enter_md_block_default(&params);
+            ret = _enter_md_block_list(&params, 0);
             break;
         }
         case MD_BLOCK_OL: { // 3
-            ret = _enter_md_block_default(&params);
+            MD_BLOCK_OL_DETAIL * det = (MD_BLOCK_OL_DETAIL *)detail;
+            ret = _enter_md_block_list(&params, det ? det->start : 0);
             break;
         }
         case MD_BLOCK_LI: { // 4
@@ -537,6 +571,17 @@ _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
             child = ptr->markdown_p->child[i];
             gt_obj_set_pos(child, _get_indent_by(child) + ptr->markdown_p->area.x, ptr->offset.y);
             ptr->offset.y += gt_obj_get_h(child);
+        }
+    }
+    if (MD_BLOCK_UL == type || MD_BLOCK_OL == type) {
+        /** Restore the parent list context when a nested list ends,
+         *  otherwise the parent would inherit the child's counter and
+         *  marker type (fix M-7: parent items numbered 4., 5. instead
+         *  of 2., 3. after a nested list). */
+        if (ptr->list_depth > 0) {
+            ptr->list = ptr->list_stack[--ptr->list_depth];
+        } else {
+            memset(&ptr->list, 0, sizeof(ptr->list));
         }
     }
     ptr->act_p[ptr->act_idx] = NULL;

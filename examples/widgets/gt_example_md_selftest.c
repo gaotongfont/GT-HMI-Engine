@@ -27,6 +27,32 @@
 #include <stdio.h>
 #include <string.h>
 
+/* M-7 source: nested list state pollution. The parent list MUST have items
+ * AFTER the nested child list — the old v15-nest case ended with the nesting,
+ * which is exactly why the pollution was never caught. */
+static const char _md_m7_ol_ol[] =
+    "1. 甲项\n"
+    "   1. 子一\n"
+    "   2. 子二\n"
+    "   3. 子三\n"
+    "2. 乙项\n"
+    "3. 丙项\n";
+
+/* OL nesting UL: parent must keep its ordered marker and counter */
+static const char _md_m7_ol_ul[] =
+    "1. 甲项\n"
+    "   - 子一\n"
+    "   - 子二\n"
+    "   - 子三\n"
+    "2. 乙项\n";
+
+/* UL nesting UL: parent must keep the bullet marker (no numbers) */
+static const char _md_m7_ul_ul[] =
+    "- 甲项\n"
+    "  - 子一\n"
+    "  - 子二\n"
+    "- 乙项\n";
+
 /* private define -------------------------------------------------------*/
 
 /* private typedef ------------------------------------------------------*/
@@ -108,6 +134,30 @@ static bool _child_text_contains(gt_obj_st * md, int idx, const char * needle)
         for (uint16_t i = 0; i < cnt; ++i) {
             const char * text = gt_textarea_get_text(child, i);
             if (text && strstr(text, needle)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/** @brief True if some textarea entry contains marker and the very next
+ *         entry contains text. List markers (" 2. ", " · ") are appended as
+ *         their own entry right before the item text, so a list item's
+ *         rendered marker is verified by this adjacency. */
+static bool _child_marker_followed_by(gt_obj_st * md, const char * marker,
+                                      const char * text)
+{
+    for (int c = 0; c < md->cnt_child; ++c) {
+        gt_obj_st * child = md->child[c];
+        if (false == gt_obj_is_type(child, GT_TYPE_TEXTAREA)) {
+            continue;
+        }
+        uint16_t cnt = gt_textarea_get_str_count(child);
+        for (uint16_t i = 0; i + 1 < cnt; ++i) {
+            const char * m = gt_textarea_get_text(child, i);
+            const char * t = gt_textarea_get_text(child, i + 1);
+            if (m && t && strstr(m, marker) && strstr(t, text)) {
                 return true;
             }
         }
@@ -267,6 +317,39 @@ gt_obj_st * gt_examples_md_selftest(void)
     bool dot4_ok = (dot4_full >= EM) && (dot4_punct >= EM);
     snprintf(detail, sizeof(detail), "dot4 em=16, 中=%u 、=%u", dot4_full, dot4_punct);
     _tc_report("M3 4bpp dot CJK advance is full width", dot4_ok, detail);
+
+    /* ---------- M-7: nested list state pollution ---------- */
+    {
+        gt_obj_st * md7 = gt_markdown_create(screen);
+        gt_obj_set_pos(md7, 0, 490);
+        gt_obj_set_size(md7, GT_SCREEN_WIDTH, 150);
+
+        /* 7a: OL nest OL — parent items after the nesting must continue
+         *     the parent counter (2., 3.), not the child's (4., 5.). */
+        gt_markdown_set_text(md7, _md_m7_ol_ol, (uint32_t)strlen(_md_m7_ol_ol));
+        bool b2 = _child_marker_followed_by(md7, " 2. ", "乙项");
+        _tc_report("M7 OL/OL parent counter restored", b2,
+            b2 ? "parent item 2. after nested list" : "parent numbering polluted by child list");
+        bool b3 = _child_marker_followed_by(md7, " 3. ", "丙项");
+        _tc_report("M7 OL/OL parent counter +1", b3,
+            b3 ? "parent item 3. after nested list" : "parent numbering polluted by child list");
+        bool bind = _child_marker_followed_by(md7, "   2. ", "子二");
+        _tc_report("M7 nested child marker indented", bind,
+            bind ? "child marker carries 2-space level indent" : "child marker not indented");
+
+        /* 7b: OL nest UL — parent must restore the ordered marker type too */
+        gt_markdown_set_text(md7, _md_m7_ol_ul, (uint32_t)strlen(_md_m7_ol_ul));
+        bool t2 = _child_marker_followed_by(md7, " 2. ", "乙项");
+        _tc_report("M7 OL/UL parent type restored", t2,
+            t2 ? "ordered marker kept after UL nesting" : "marker type polluted by child UL");
+
+        /* 7c: UL nest UL — parent stays unordered (bullet, no numbers) */
+        gt_markdown_set_text(md7, _md_m7_ul_ul, (uint32_t)strlen(_md_m7_ul_ul));
+        bool ul_ok = _child_marker_followed_by(md7, " · ", "乙项");
+        bool no_num = !_child_marker_followed_by(md7, " 3. ", "乙项");
+        _tc_report("M7 UL/UL parent bullet kept", ul_ok && no_num,
+            ul_ok ? "bullet marker kept after nesting" : "unordered parent got numbered");
+    }
 
     printf("[MD_TC] ===== %d/%d passed =====\n", _pass, _total);
     fflush(stdout);
