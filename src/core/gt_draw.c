@@ -985,7 +985,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         emoji_raw.header.w = *p_width;
         emoji_raw.header.h = 1;
         emoji_raw.header.type = GT_IMG_DECODER_TYPE_RAM;
-        emoji_raw.header.color_format = GT_IMG_CF_RGB888;
+        emoji_raw.header.color_format = GT_IMG_CF_RGB565;
 
         gt_attr_rect_st dsc_emoji = {0};
         dsc_emoji.bg_opa    = dsc->opa;

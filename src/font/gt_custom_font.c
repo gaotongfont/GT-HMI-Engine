@@ -54,13 +54,15 @@ static int _emoji_def_get_width(struct gt_custom_font_s* font, uint32_t font_cod
 GT_ATTRIBUTE_RAM_TEXT
 static int _emoji_def_get_height(struct gt_custom_font_s* font, uint32_t font_code);
 GT_ATTRIBUTE_RAM_TEXT
+static int _emoji_def_read_img_font(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer, unsigned char* opa, unsigned int line);
+GT_ATTRIBUTE_RAM_TEXT
 static bool _emoji_def_is_emoji (struct gt_custom_emoji_s * em, uint32_t font_code);
 
 GT_ATTRIBUTE_RAM_DATA
 static gt_custom_font_st _emoji_font_def = {
 
-    .ffs.option = GT_FAMILY_Emoji_16x16,
-    .ffs.func.read_img_font = GT_Emoji,
+    .ffs.option = GT_CUSTOM_FONT_OPTION(GT_FAMILY_Emoji_16x16),
+    .ffs.func.read_img_font = _emoji_def_read_img_font,
     .ffs.type = GT_FONT_TYPE_FLAG_EMOJI,
 
     .get_dot_width = _emoji_def_get_dot_width,
@@ -208,19 +210,25 @@ static _gt_custom_list_st _custom_list = {0};
 /* static functions -----------------------------------------------------*/
 #if defined(GT_FAMILY_Emoji_16x16)
 GT_ATTRIBUTE_RAM_TEXT
+static int _emoji_def_read_img_font(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer, unsigned char* opa, unsigned int line)
+{
+    (void)font_option;
+    return GT_Emoji(fontcode, GT_FAMILY_Emoji_16x16, pbuffer, opa, line);
+}
+GT_ATTRIBUTE_RAM_TEXT
 static int _emoji_def_get_dot_width(struct gt_custom_font_s* font, uint32_t font_code)
 {
-    return GT_Get_Font_Dot_Width(font_code, font->ffs.option, 16, 1);
+    return GT_Get_Font_Dot_Width(font_code, GT_FAMILY_Emoji_16x16, 16, 1);
 }
 GT_ATTRIBUTE_RAM_TEXT
 static int _emoji_def_get_width(struct gt_custom_font_s* font, uint32_t font_code)
 {
-    return GT_Get_Font_Width(font_code, font->ffs.option, 16 , 1 , NULL);
+    return GT_Get_Font_Width(font_code, GT_FAMILY_Emoji_16x16, 16 , 1 , NULL);
 }
 GT_ATTRIBUTE_RAM_TEXT
 static int _emoji_def_get_height(struct gt_custom_font_s* font, uint32_t font_code)
 {
-    return GT_Get_Font_Height(font_code, font->ffs.option, 16, 1);
+    return GT_Get_Font_Height(font_code, GT_FAMILY_Emoji_16x16, 16, 1);
 }
 
 GT_ATTRIBUTE_RAM_TEXT

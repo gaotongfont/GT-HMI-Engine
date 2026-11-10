@@ -526,11 +526,13 @@ static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoticon_font(uint32_t unicode) {
 static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoji_font(uint32_t option ,uint32_t unicode) {
 
 #if GT_CUSTOM_FONT_ENABLE
-    return gt_custom_is_emoji(option, unicode);
-#else
-    return false;
+    if(IS_GT_CUSTOM_FONT_OPTION(option)) {
+        return gt_custom_is_emoji(option, unicode);
+    }
 #endif
 
+    int ret = gt_font_get_emoji_dot(unicode, option, NULL, NULL, 1);
+    return ret > 0 ? true : false;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_font_option(gt_font_st * font, uint32_t unicode)
