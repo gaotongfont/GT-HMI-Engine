@@ -80,6 +80,11 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
         return NULL;
     }
 
+    if (cnt_indev >= _CNT_INDEV_MAX) {
+        GT_LOGE(GT_LOG_TAG_GUI, "[error]indev count over max: %d", _CNT_INDEV_MAX);
+        return NULL;
+    }
+
 #if GT_USE_TOUCH_QUEUE
     {
         static bool _touch_queue_inited = false;
@@ -108,7 +113,7 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
     }
     cnt_indev++;
 
-    return indev_act[cnt_indev];
+    return indev_act[cnt_indev - 1];
 }
 
 void gt_indev_set_default(gt_indev_st * _indev)

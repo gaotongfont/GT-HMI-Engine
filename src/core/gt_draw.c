@@ -485,8 +485,8 @@ static GT_ATTRIBUTE_RAM_TEXT bool _use_vec_gray2_edge_aa(const gt_font_info_st *
 }
 #endif
 
-static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_font_resource_len(const gt_font_info_st *font_info,
-                                                              uint16_t calculated_len)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_font_resource_len(const gt_font_info_st *font_info,
+                                                              uint32_t calculated_len)
 {
     uint16_t option = gt_font_family_get_option(font_info->family, FONT_LAN_NUMBER, font_info->cjk);
     if (GT_FONT_TYPE_FLAG_DOT_MATRIX_A8 == gt_font_type_get(option)) {
@@ -595,7 +595,7 @@ _advance_x(gt_size_t * x, gt_font_size_t width, uint8_t space_x, bool align_reve
 static GT_ATTRIBUTE_RAM_TEXT bool _draw_one_symbol(
     _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
     gt_font_st * tmp_font, gt_area_st * area_font,
-    uint32_t uni_or_gbk, uint16_t data_len, gt_size_t font_disp_h)
+    uint32_t uni_or_gbk, uint32_t data_len, gt_size_t font_disp_h)
 {
     uint8_t symbol_size = tmp_font->info.size;
     blend_dsc->mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font->info.size, &symbol_size);
@@ -653,9 +653,14 @@ typedef struct {
  * @param data_len   res 缓冲字节数
  * @return 分配结果，res/mask_line 为 NULL 表示对应分配失败
  */
-static GT_ATTRIBUTE_RAM_TEXT _draw_font_buf_st _draw_font_buf_alloc(gt_font_size_t font_size, uint16_t data_len)
+static GT_ATTRIBUTE_RAM_TEXT _draw_font_buf_st _draw_font_buf_alloc(gt_font_size_t font_size, uint32_t data_len)
 {
     _draw_font_buf_st r = {0};
+    /* 尺寸计算结果无效时不应分配缓冲，否则按大字号绘制会越界写坏内存池 */
+    if (0 == data_len || 0 == font_size) {
+        GT_LOGE(GT_LOG_TAG_GUI, "invalid font buffer size, data_len = %u, font_size = %d", data_len, font_size);
+        return r;
+    }
 #if GT_USE_EXTRA_FULL_FONT_BUFFER
     gt_buffer_st * gc_font_p = _gt_gc_get_full_font_buffer();
     r.is_extend_font_valid = _gt_gc_full_font_buffer_is_valid() && (data_len < gc_font_p->len);
@@ -1138,9 +1143,13 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, lan, text_len);
 #endif
 
+    if (0 == font_size_res.font_per_size || 0 == font_size_res.font_buff_len) {
+        GT_LOGE(GT_LOG_TAG_GUI, "invalid font size: %d", tmp_font.info.size);
+        goto _buf_handle;
+    }
     font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len + 128);
     if (NULL == font_buf) {
-        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", font_size_res.font_buff_len);
+        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %u", font_size_res.font_buff_len);
         goto _buf_handle;
     }
     gt_memset_0(font_buf, font_size_res.font_buff_len);
@@ -2304,7 +2313,7 @@ typedef struct {
     uint8_t *         mask_line;
     uint8_t *         txt;
     uint16_t          txt_len;
-    uint16_t          data_len;
+    uint32_t          data_len;
     uint8_t           lan;
     int8_t            offset_y;
     gt_font_size_t    line_box_height;
@@ -2328,6 +2337,11 @@ static int8_t _draw_text_ctx_init(_draw_text_ctx_st * ctx, const gt_attr_font_st
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&ctx->tmp_font.info, FONT_LAN_UNKNOWN, 0);
 #endif
     ctx->data_len = _get_font_resource_len(&ctx->tmp_font.info, font_size_res.font_per_size);
+    /* 尺寸计算结果无效时直接放弃本次绘制，避免后续按大字号越界写缓冲 */
+    if (0 == ctx->data_len) {
+        GT_LOGE(GT_LOG_TAG_GUI, "invalid font resource length, size = %d", ctx->tmp_font.info.size);
+        return -1;
+    }
     /* 使用真实最大像素尺寸分配 mask_line，防止 option 实际字号 > 配置字号时溢出 */
     gt_font_size_t alloc_size = font_size_res.actual_max_size > 0 ? font_size_res.actual_max_size : ctx->tmp_font.info.size;
     ctx->line_box_height = _get_font_line_box_height(&ctx->tmp_font.info);
@@ -2399,7 +2413,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     uint8_t * const mask_line  = _ctx.mask_line;
     uint8_t * txt              = _ctx.txt;
     const uint16_t txt_len     = _ctx.txt_len;
-    const uint16_t data_len    = _ctx.data_len;
+    const uint32_t data_len    = _ctx.data_len;
     const uint8_t  lan         = _ctx.lan;
     const int8_t   offset_y    = _ctx.offset_y;
     const gt_font_size_t line_box_height = _ctx.line_box_height;
@@ -2429,7 +2443,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     uint32_t uni_or_gbk = 0, ret_w = 0;
     uint16_t idx = 0, idx_2 = 0, idx_len = 0;
     uint8_t over_length = 0;
-    uint16_t prev_rendered_size = data_len;
+    uint32_t prev_rendered_size = data_len;
     int32_t idx_step = 0;
     const bool align_reverse = _is_align_reverse(dsc->align);
 
@@ -2799,7 +2813,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     gt_font_st * tmp_font_p = &_ctx.tmp_font;
     uint8_t * const mask_line  = _ctx.mask_line;
     uint8_t * txt              = _ctx.txt;
-    const uint16_t data_len    = _ctx.data_len;
+    const uint32_t data_len    = _ctx.data_len;
     const uint8_t  lan         = _ctx.lan;
     const int8_t   offset_y    = _ctx.offset_y;
     const gt_font_size_t line_box_height = _ctx.line_box_height;
@@ -2831,7 +2845,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     uint32_t uni_or_gbk = 0, remark_idx = 0, lan_len = 0;
     uint16_t idx = 0, idx_len = 0, txt_len = dsc->font->len;
     uint8_t over_length = 0;
-    uint16_t prev_rendered_size = data_len;
+    uint32_t prev_rendered_size = data_len;
     _omit_info_st omit_info = {0};
     bool start_x_flag = dsc->reg.enabled_start;
     bool is_omit_display = false;

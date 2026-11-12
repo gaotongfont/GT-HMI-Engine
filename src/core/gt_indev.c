@@ -2389,6 +2389,10 @@ void gt_indev_handler(struct _gt_timer_s * timer)
     cnt_indev = gt_indev_get_dev_count();
     for(i=0; i<cnt_indev; i++){
         indev = gt_indev_get_dev_by_idx(i);
+        if (NULL == indev || NULL == indev->drv) {
+            GT_LOGW(GT_LOG_TAG_GUI, "[error]indev or drv is null, idx: %d", i);
+            continue;
+        }
         switch(indev->drv->type){
             case GT_INDEV_TYPE_POINTER:
 #if GT_USE_MULTI_TOUCH
@@ -2424,6 +2428,9 @@ void gt_indev_release_focus_lock(void)
     cnt_indev = gt_indev_get_dev_count();
     for(i=0; i<cnt_indev; i++){
         indev = gt_indev_get_dev_by_idx(i);
+        if (NULL == indev || NULL == indev->drv) {
+            continue;
+        }
         switch(indev->drv->type){
             case GT_INDEV_TYPE_KEYPAD:
                 _SET_KEYPAD_LOCK(indev, false);

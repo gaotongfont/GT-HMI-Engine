@@ -50,6 +50,14 @@
 #endif
 
 #define GT_FONT_FAMILY_CHECK(_list, _family) ((!_list.fam_list) || (_list.count == 0) || ((_family) >= (_list.count)))
+
+/**
+ * @brief 字库上报的合法字形像素高度上限，超过该值视为异常数据，
+ *        避免 dot_width / font_per_size 计算溢出导致缓冲区分配过小。
+ */
+#ifndef _GT_FONT_SIZE_MAX
+    #define _GT_FONT_SIZE_MAX   255
+#endif
 /* private typedef ------------------------------------------------------*/
 /**
  * @brief 0: default, < 0: up, > 0: down
@@ -1361,11 +1369,19 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
         res.font_per_size = 48;
         res.font_buff_len = res.font_per_size * (text_len + 1);
     } else {
-        res.font_per_size = (res.dot_width * res.dot_width * font_gray) >> 3;
+        /* 使用 64 位中间量计算，避免大字号下整数溢出导致缓冲区分配过小 */
+        uint64_t per_size = ((uint64_t)res.dot_width * res.dot_width * font_gray) >> 3;
         if(GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH == font_type){
-            res.font_per_size += 2;
+            per_size += 2;
         }
-        res.font_buff_len = res.font_per_size * 3;
+        uint64_t buff_len = per_size * 3;
+        if (0 == per_size || per_size > 0xFFFFFFFFULL || buff_len > 0xFFFFFFFFULL) {
+            GT_LOGE(GT_LOG_TAG_GUI, "invalid font size: %d, dot_width: %d", info->size, res.dot_width);
+            _gt_font_size_res_st empty = {0};
+            return empty;
+        }
+        res.font_per_size = (uint32_t)per_size;
+        res.font_buff_len = (uint32_t)buff_len;
     }
 
     if (GT_FONT_TYPE_FLAG_VEC == font_type) {
@@ -1407,20 +1423,34 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
         /* 查询该 option 对应的真实像素高度，取所有语言中的最大值 */
         if (opt != GT_CFG_DEFAULT_FONT_FAMILY) {
             int h = GT_Get_Font_Height('A', opt, info->size, info->gray);
-            if (h > actual_max_size) {
+            /* 只采纳合法范围内的真实高度，避免异常值参与尺寸计算 */
+            if (h > 0 && h <= _GT_FONT_SIZE_MAX && h > actual_max_size) {
                 actual_max_size = (uint16_t)h;
             }
         }
     }
 
+    /* 字库缺少对应字号时 font_gray 可能为 0，回退到配置灰度，避免 per_size 为 0 */
+    if (0 == font_gray) {
+        font_gray = info->gray > 0 ? info->gray : 1;
+    }
+
     /* 用真实最大像素尺寸计算 dot_width，防止 option 实际字号 > 配置字号时缓冲溢出 */
     res.dot_width = (font_type == GT_FONT_TYPE_FLAG_VEC) ? ((((info->size + 15) >> 4) << 4) * info->gray) : ((((actual_max_size + 7) >> 3) << 3));
 
-    res.font_per_size = (res.dot_width * res.dot_width * font_gray >> 3);
+    /* 使用 64 位中间量计算，避免大字号下整数溢出导致缓冲区分配过小 */
+    uint64_t per_size = ((uint64_t)res.dot_width * res.dot_width * font_gray) >> 3;
     if(GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH == font_type){
-        res.font_per_size += 2;
+        per_size += 2;
     }
-    res.font_buff_len = res.font_per_size * 3;
+    uint64_t buff_len = per_size * 3;
+    if (0 == per_size || per_size > 0xFFFFFFFFULL || buff_len > 0xFFFFFFFFULL) {
+        GT_LOGE(GT_LOG_TAG_GUI, "invalid font size: %d, dot_width: %d", info->size, res.dot_width);
+        _gt_font_size_res_st empty = {0};
+        return empty;
+    }
+    res.font_per_size = (uint32_t)per_size;
+    res.font_buff_len = (uint32_t)buff_len;
     res.actual_max_size = actual_max_size;
 
     if(GT_FONT_TYPE_FLAG_VEC == font_type){
@@ -1941,9 +1971,13 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_convertor_string_width(gt_font_st *fo
         convertor.fontgray = (ret_style / 10) ? (ret_style / 10) : 1;
     }
 
+    if (0 == font_size_res.font_per_size || 0 == font_size_res.font_buff_len) {
+        GT_LOGE(GT_LOG_TAG_GUI, "invalid font size: %d", tmp_font.info.size);
+        goto _ret_handle;
+    }
     font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len);
     if (NULL == font_buf) {
-        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", font_size_res.font_buff_len);
+        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %u", font_size_res.font_buff_len);
         goto _ret_handle;
     }
     gt_memset_0(font_buf, font_size_res.font_buff_len);

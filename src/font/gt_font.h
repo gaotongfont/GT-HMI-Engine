@@ -275,8 +275,8 @@ typedef struct _gt_bidi_s {
 
 typedef struct _gt_font_size_res_s {
     uint32_t font_buff_len;
-    uint16_t dot_width;
-    uint16_t font_per_size;
+    uint32_t dot_width;         /**< 字形点阵宽度（字节/像素对齐后），大字号可能超过 uint16 */
+    uint32_t font_per_size;     /**< 单个字形点阵缓冲字节数，大字号可能超过 uint16 */
     uint16_t actual_max_size;   /**< 所有语言 option 对应的真实最大像素高度 */
 }_gt_font_size_res_st;
 
